@@ -1,0 +1,16 @@
+{
+  "name": "ElectronMediaPreviewer",
+  "version": "1.0.0",
+  "description": "基于 Electron 开发的多媒体消息预览器: 图片/视频",
+  "main": "index.js",
+  "repository": "https://github.com/JSoon/ElectronMediaPreviewer.git",
+  "author": "J.Soon <serdeemail@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "devDependencies": {
+    "http-server": "^13.0.1"
+  },
+  "dependencies": {
+    "ant-design-vue": "^2.2.6"
+  }
+}
