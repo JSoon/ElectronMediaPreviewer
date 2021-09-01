@@ -1,7 +1,10 @@
 module.exports = {
   root: true,
   env: {
-    node: true,
+    browser: true,
+    commonjs: true,
+    es6: true,
+    node: true
   },
   extends: [
     "plugin:vue/vue3-essential",
@@ -18,9 +21,24 @@ module.exports = {
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
 
     "prettier/prettier": [
-      "error", 
+      "error",
       {
-        "singleQuote": true
+        arrowParens: "always",
+        bracketSpacing: true,
+        embeddedLanguageFormatting: "auto",
+        htmlWhitespaceSensitivity: "css",
+        insertPragma: false,
+        jsxBracketSameLine: false,
+        jsxSingleQuote: true,
+        printWidth: 120,
+        quoteProps: "consistent",
+        requirePragma: false,
+        semi: true,
+        singleQuote: true,
+        tabWidth: 2,
+        trailingComma: "es5",
+        useTabs: false,
+        vueIndentScriptAndStyle: false,
       }
     ]
   },
