@@ -6,6 +6,9 @@ module.exports = {
     es6: true,
     node: true
   },
+  globals: {
+    electron: true
+  },
   extends: [
     "plugin:vue/vue3-essential",
     "eslint:recommended",
@@ -19,6 +22,8 @@ module.exports = {
   rules: {
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "warn" : "off",
+
+    "@typescript-eslint/no-var-requires": "off",
 
     "prettier/prettier": [
       "error",
@@ -41,5 +46,5 @@ module.exports = {
         vueIndentScriptAndStyle: false,
       }
     ]
-  },
+  }
 };

@@ -6,7 +6,9 @@
   "repository": "https://github.com/JSoon/ElectronMediaPreviewer.git",
   "author": "J.Soon <serdeemail@gmail.com>",
   "license": "MIT",
+  "main": "./electron/main.js",
   "scripts": {
+    "start": "cp electron/config/env.dev.js electron/config/env.js & electron .",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
@@ -26,6 +28,7 @@
     "@vue/compiler-sfc": "^3.0.0",
     "@vue/eslint-config-prettier": "^6.0.0",
     "@vue/eslint-config-typescript": "^7.0.0",
+    "electron": "^14.0.0",
     "eslint": "^6.7.2",
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^7.0.0",

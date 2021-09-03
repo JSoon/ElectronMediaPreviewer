@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+  <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'"> -->
+  <title>Hello World!</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #eee;
+    }
+
+    .media-list {
+      display: flex;
+      align-items: center;
+    }
+
+    img,
+    video {
+      display: block;
+      width: 25%;
+      padding: 0 10px;
+      object-fit: contain;
+      cursor: pointer;
+      transition: all .3s;
+    }
+
+    img:hover,
+    video:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, .2);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="J_MediaList" class="media-list">
+    <img class="media-item" src="" alt="">
+    <img class="media-item" src="" alt="">
+    <video class="media-item" src=""></video>
+    <img class="media-item" src="" alt="">
+  </div>
+
+  <script>
+    const mediaList = [
+      {
+        type: 'IMG',
+        url: 'https://scontent.fhkg3-1.fna.fbcdn.net/v/t39.30808-6/241107820_150025417285175_1195296154863190911_n.jpg?_nc_cat=110&ccb=1-5&_nc_sid=0debeb&_nc_ohc=h7ttN3ofpDUAX9tV8G_&_nc_ht=scontent.fhkg3-1.fna&oh=2b5e5cdfcde3db1f68739583ac7d6335&oe=6135FA7D'
+      },
+      {
+        type: 'IMG',
+        url: 'https://scontent.fhkg3-1.fna.fbcdn.net/v/t1.6435-9/239606956_326270255952891_8917074287921648688_n.jpg?_nc_cat=107&ccb=1-5&_nc_sid=79524b&_nc_ohc=vbtICsrvQFMAX8-x88W&tn=FvWfqy7uISlIscQs&_nc_ht=scontent.fhkg3-1.fna&oh=804b3221405ccfe3671eb08857064aad&oe=6158389E'
+      },
+      {
+        type: 'VIDEO',
+        url: 'https://www.w3schools.com/html/mov_bbb.mp4'
+      },
+      {
+        type: 'IMG',
+        url: 'https://scontent.fhkg3-2.fna.fbcdn.net/v/l/t1.6435-9/193949077_537575977662003_2620621848631737894_n.jpg?_nc_cat=103&ccb=1-5&_nc_sid=19026a&_nc_ohc=rJrVU-fzk2sAX9hClpT&_nc_ht=scontent.fhkg3-2.fna&oh=58e196e90fa6e71428d909223a36b21e&oe=61557260'
+      },
+    ]
+
+    document.querySelectorAll('.media-item').forEach((ele, index) => {
+      ele.setAttribute('src', mediaList[index].url)
+
+      ele.addEventListener('click', e => {
+        window.electron.ipcRenderer.send(window.electron.IPC_CHANNELS.MEDIA_PREVIEW, {
+          index,
+          // 当前预览项
+          media: mediaList[index],
+          // 预览列表
+          mediaList
+        })
+      })
+    })
+  </script>
+</body>
+
+</html>
