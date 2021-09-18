@@ -3,9 +3,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, onMounted, ref } from 'vue';
 import MediaPreviewer from '@/components/MediaPreviewer.vue';
 import { IMediaData, IMediaItem } from '@/typings/media';
+import useShortcuts from '@/utils/useShortcuts';
 
 export default defineComponent({
   name: 'App',
@@ -28,6 +29,8 @@ export default defineComponent({
       mediaList.value = data.mediaList;
     });
 
+    onMounted(useShortcuts);
+
     return {
       index,
       media,
@@ -38,9 +41,20 @@ export default defineComponent({
 </script>
 
 <style lang="less">
+html,
 body {
+  width: 100%;
+  height: 100%;
   margin: 0;
   padding: 0;
+  -webkit-app-region: drag;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: 0.5s opacity;
+
+  &.fade-out {
+    opacity: 0;
+  }
 }
 
 #app {
@@ -49,5 +63,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+
+img {
+  -webkit-user-drag: none;
 }
 </style>
