@@ -22,7 +22,7 @@ export default function useMediaData() {
   const { resizeToFit } = useToolbar();
 
   // 上一张
-  const onPrev = () => {
+  const turnToPrev = () => {
     if (state.index === 0) {
       alert('已经是第一张了');
       return;
@@ -33,7 +33,7 @@ export default function useMediaData() {
   };
 
   // 下一张
-  const onNext = () => {
+  const turnToNext = () => {
     if (state.index === state.mediaList.length - 1) {
       alert('已经是最后一张了');
       return;
@@ -45,7 +45,7 @@ export default function useMediaData() {
 
   return {
     ...toRefs(state),
-    onPrev,
-    onNext,
+    turnToPrev,
+    turnToNext,
   };
 }

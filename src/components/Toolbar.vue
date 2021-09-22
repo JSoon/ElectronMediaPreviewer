@@ -1,8 +1,8 @@
 <template>
   <div class="com-toolbar" ref="mediaToolbarDOM">
     <div class="group">
-      <button @click="onPrev">上一页</button>
-      <button @click="onNext">下一页</button>
+      <button @click="turnToPrev">上一页</button>
+      <button @click="turnToNext">下一页</button>
     </div>
     <div class="group">
       <button :disabled="isMediaVideo">放大</button>
@@ -30,7 +30,7 @@ import { EMediaType } from '@/typings/media';
 
 export default defineComponent({
   setup() {
-    const { media, onPrev, onNext } = useMediaData();
+    const { media, turnToPrev, turnToNext } = useMediaData();
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
 
     const { toggleFullscreen } = useFullscreen();
@@ -47,8 +47,8 @@ export default defineComponent({
     return {
       mediaToolbarDOM,
       isMediaVideo,
-      onPrev,
-      onNext,
+      turnToPrev,
+      turnToNext,
       closePreviewer,
       toggleFullscreen,
       toggleSize,

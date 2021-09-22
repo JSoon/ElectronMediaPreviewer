@@ -1,6 +1,10 @@
+import useMediaData from './useMediaData';
+
 const { ipcRenderer, IPC_CHANNELS } = window.electron;
 
 export default (): void => {
+  const { turnToPrev, turnToNext } = useMediaData();
+
   // 空格键, 退出键: 关闭预览
   document.addEventListener('keyup', (e) => {
     if (e.code === 'Space' || e.code === 'Escape') {
@@ -17,6 +21,17 @@ export default (): void => {
     }
     if (e.code === 'F5') {
       e.preventDefault();
+    }
+  });
+
+  // 左右切换上下页
+  document.addEventListener('keyup', (e) => {
+    if (e.code === 'ArrowLeft') {
+      e.preventDefault();
+      turnToPrev();
+    } else if (e.code === 'ArrowRight') {
+      e.preventDefault();
+      turnToNext();
     }
   });
 };
