@@ -100,7 +100,7 @@ export default defineComponent({
   }
 
   .fullscreen-actions {
-    position: absolute;
+    position: fixed;
     top: 10px;
     left: 10px;
   }
