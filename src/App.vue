@@ -1,15 +1,13 @@
 <template>
-  <Toolbar @fullscreen="toggleFullscreen" />
-  <MediaPreviewer ref="comMediaPreviewer" :index="index" :media="media" :mediaList="mediaList" />
+  <Toolbar />
+  <MediaPreviewer />
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+import { defineComponent, onMounted } from 'vue';
 import Toolbar from '@/components/Toolbar.vue';
 import MediaPreviewer from '@/components/MediaPreviewer.vue';
-import { IMediaData, IMediaItem } from '@/typings/media';
 import useShortcuts from '@/composables/useShortcuts';
-import useFullscreen from '@/composables/useFullscreen';
 
 export default defineComponent({
   name: 'App',
@@ -21,48 +19,8 @@ export default defineComponent({
     return {};
   },
   setup() {
-    const index = ref(0);
-    const media = ref<IMediaItem>();
-    const mediaList = ref<IMediaItem[]>();
-
-    const comMediaPreviewer = ref<InstanceType<typeof MediaPreviewer>>();
-    const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen();
-
-    const { ipcRenderer, IPC_CHANNELS } = window.electron;
-    ipcRenderer.on(IPC_CHANNELS.MEDIA_PREVIEW, (e: any, data: IMediaData) => {
-      console.log(data);
-      index.value = data.index;
-      media.value = data.media;
-      mediaList.value = data.mediaList;
-    });
-
+    // 快捷键注册
     onMounted(useShortcuts);
-
-    return {
-      index,
-      media,
-      mediaList,
-
-      comMediaPreviewer,
-      isFullscreen,
-      enterFullscreen,
-      exitFullscreen,
-    };
-  },
-  methods: {
-    // 全屏切换
-    toggleFullscreen() {
-      const previewer = this.comMediaPreviewer?.$el;
-      if (!previewer) {
-        return;
-      }
-      // 若当前是全屏则退出全屏, 否则进入全屏
-      if (this.isFullscreen) {
-        this.exitFullscreen();
-      } else {
-        this.enterFullscreen(previewer);
-      }
-    },
   },
 });
 </script>

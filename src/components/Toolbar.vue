@@ -1,8 +1,8 @@
 <template>
   <div class="com-toolbar">
     <div class="group">
-      <button>上一页</button>
-      <button>下一页</button>
+      <button @click="onPrev">上一页</button>
+      <button @click="onNext">下一页</button>
     </div>
     <div class="group">
       <button>放大</button>
@@ -23,20 +23,23 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import useMediaData from '@/composables/useMediaData';
+import useFullscreen from '@/composables/useFullscreen';
 
 export default defineComponent({
-  setup(props, { emit }) {
+  setup() {
+    const { toggleFullscreen } = useFullscreen();
+
+    const { onPrev, onNext } = useMediaData();
+
     // 关闭预览
     const closePreviewer = () => {
       window.close();
     };
 
-    // 切换全屏
-    const toggleFullscreen = () => {
-      emit('fullscreen');
-    };
-
     return {
+      onPrev,
+      onNext,
       closePreviewer,
       toggleFullscreen,
     };

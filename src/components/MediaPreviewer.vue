@@ -1,5 +1,5 @@
 <template>
-  <div class="com-media-previewer">
+  <div class="com-media-previewer" ref="mediaPreviewerDOM">
     <template v-if="media">
       <img v-if="isMediaImage" class="media-item" :class="mediaClass" :src="media.url" alt="xxx" />
       <video v-if="isMediaVideo" class="media-item" :class="mediaClass" controls>
@@ -16,50 +16,39 @@
 </template>
 
 <script lang="ts">
-import { PropType, defineComponent, computed, watch } from 'vue';
-import { IMediaItem, EMediaType } from '@/typings/media';
+import { defineComponent, computed, onMounted, ref } from 'vue';
+import { EMediaType } from '@/typings/media';
+import useMediaData from '@/composables/useMediaData';
 import useFullscreen from '@/composables/useFullscreen';
 
 export default defineComponent({
-  props: {
-    index: {
-      type: Number,
-    },
-    media: {
-      type: Object as PropType<IMediaItem>,
-    },
-    mediaList: {
-      type: Array as PropType<IMediaItem[]>,
-    },
-  },
-  setup(props) {
-    console.log('props', props);
+  setup() {
+    const { media } = useMediaData();
 
-    const isMediaImage = computed(() => props.media?.type === EMediaType.IMG);
-    const isMediaVideo = computed(() => props.media?.type === EMediaType.VIDEO);
+    const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
+    const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
 
     const mediaClass = computed(() => {
-      return props.media?.type === EMediaType.IMG ? 'media-image' : 'media-video';
+      return media.value?.type === EMediaType.IMG ? 'media-image' : 'media-video';
     });
 
     const { isFullscreen, exitFullscreen } = useFullscreen();
-    watch(isFullscreen, (val) => {
-      if (val) {
-        console.log('当前是全屏');
-      } else {
-        console.log('当前是非全屏');
-      }
-    });
     // 关闭预览
     const closePreviewer = () => {
       window.close();
     };
 
+    // 预览组件DOM全局变量注册
+    const mediaPreviewerDOM = ref(null);
+    onMounted(() => (window.$mediaPreviewerDOM = mediaPreviewerDOM.value));
+
     return {
+      media,
       isMediaImage,
       isMediaVideo,
       mediaClass,
 
+      mediaPreviewerDOM,
       isFullscreen,
       exitFullscreen,
       closePreviewer,

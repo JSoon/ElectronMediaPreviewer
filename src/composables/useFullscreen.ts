@@ -24,9 +24,22 @@ export default function useFullscreen() {
     document.exitFullscreen();
   };
 
+  // 切换全屏/非全屏
+  const toggleFullscreen = () => {
+    if (!window.$mediaPreviewerDOM) {
+      return;
+    }
+    if (isFullscreen.value) {
+      exitFullscreen();
+    } else {
+      enterFullscreen(window.$mediaPreviewerDOM);
+    }
+  };
+
   return {
     isFullscreen,
     enterFullscreen,
     exitFullscreen,
+    toggleFullscreen,
   };
 }
