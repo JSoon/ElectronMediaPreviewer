@@ -5,6 +5,7 @@ interface Window {
   };
   // 预览组件DOM
   $mediaPreviewerDOM: HTMLElement | null;
-  $mediaImageDOM: HTMLElement | null;
-  $mediaVideoDOM: HTMLElement | null;
+  $mediaToolbarDOM: HTMLDivElement | null;
+  $mediaImageDOM: HTMLImageElement | null;
+  $mediaVideoDOM: HTMLVideoElement | null;
 }

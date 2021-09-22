@@ -79,6 +79,7 @@ export default defineComponent({
   right: 0;
   bottom: 0;
   left: 0;
+  display: flex;
   overflow: auto;
   background-color: #eee;
 

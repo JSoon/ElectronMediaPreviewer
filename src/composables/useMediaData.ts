@@ -1,5 +1,6 @@
 import { toRefs, reactive } from 'vue';
 import { IMediaData } from '@/typings/media';
+import useToolbar from './useToolbar';
 
 // 默认状态
 const state: IMediaData = reactive({
@@ -18,6 +19,8 @@ ipcRenderer.on(IPC_CHANNELS.MEDIA_PREVIEW, (e: any, data: IMediaData) => {
 });
 
 export default function useMediaData() {
+  const { resizeToFit } = useToolbar();
+
   // 上一张
   const onPrev = () => {
     if (state.index === 0) {
@@ -26,6 +29,7 @@ export default function useMediaData() {
     }
     state.index -= 1;
     state.media = state.mediaList[state.index];
+    resizeToFit();
   };
 
   // 下一张
@@ -36,6 +40,7 @@ export default function useMediaData() {
     }
     state.index += 1;
     state.media = state.mediaList[state.index];
+    resizeToFit();
   };
 
   return {

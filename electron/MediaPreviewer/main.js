@@ -3,10 +3,13 @@
  */
 
 const path = require('path');
-const { BrowserWindow, ipcMain } = require('electron');
+const { BrowserWindow, ipcMain, screen } = require('electron');
 const { IPC_CHANNELS } = require('./enums');
 const { isMacOS } = require('./platform');
 const config = require('../config/env');
+
+const defaultWinWidth = 960;
+const defaultWinHeight = 640;
 
 class MediaPreviewer {
   window = null;
@@ -28,10 +31,10 @@ class MediaPreviewer {
 
     // 创建新窗口
     const previewWin = new BrowserWindow({
-      width: 960,
-      height: 640,
-      minWidth: 960,
-      minHeight: 640,
+      width: defaultWinWidth,
+      height: defaultWinHeight,
+      minWidth: defaultWinWidth,
+      minHeight: defaultWinHeight,
       center: true,
       frame: false,
       autoHideMenuBar: true,
@@ -44,6 +47,7 @@ class MediaPreviewer {
 
     previewWin.on('show', () => {
       this.initialState = this.window.getBounds();
+      console.log('this.initialState', this.initialState);
     });
 
     previewWin.on('closed', () => {
@@ -95,9 +99,49 @@ const useMediaPreviewer = (mainWindow) => {
     previewer.close();
   }
 
+  // 切换到1:1原始尺寸
+  function onMediaResizeToOrigin(e, data) {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width, height } = primaryDisplay.workAreaSize;
+    const { naturalWidth, naturalHeight, toolbarHeight } = data;
+
+    // 若图片原始尺寸小于默认窗口尺寸, 则使用默认窗口尺寸进行居中计算
+    let calcWidth = 0;
+    let calcHeight = 0;
+    if (naturalWidth > defaultWinWidth) {
+      calcWidth = naturalWidth;
+    } else {
+      calcWidth = defaultWinWidth;
+    }
+    if (naturalHeight > defaultWinHeight) {
+      calcHeight = naturalHeight;
+    } else {
+      calcHeight = defaultWinHeight;
+    }
+
+    previewer.window.setBounds(
+      {
+        x: Math.floor((width - calcWidth) / 2),
+        y: Math.floor((height - calcHeight) / 2),
+        // 因为布局原因, 窗口高度=工具栏高度+图片高度, 故图片在缩放至1:1原始尺寸时, 窗口高度需要加上工具栏高度
+        width: naturalWidth + toolbarHeight,
+        height: naturalHeight + toolbarHeight,
+      },
+      true
+    );
+  }
+
+  // 切换到固定尺寸
+  function onMediaResizeToFit(e) {
+    previewer.window.setBounds(previewer.initialState, true);
+  }
+
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW, onMediaPreview);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE, onMediaPreviewClose);
+
+  ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, onMediaResizeToOrigin);
+  ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT, onMediaResizeToFit);
 
   mainWindow.on('close', (e) => {
     console.log('主窗口要关闭了', mainWindow);

@@ -1,14 +1,14 @@
 <template>
-  <div class="com-toolbar">
+  <div class="com-toolbar" ref="mediaToolbarDOM">
     <div class="group">
       <button @click="onPrev">上一页</button>
       <button @click="onNext">下一页</button>
     </div>
     <div class="group">
-      <button>放大</button>
-      <button>缩小</button>
-      <button>翻转</button>
-      <button @click="toggleSize">1:1</button>
+      <button :disabled="isMediaVideo">放大</button>
+      <button :disabled="isMediaVideo">缩小</button>
+      <button :disabled="isMediaVideo">翻转</button>
+      <button :disabled="isMediaVideo" @click="toggleSize">{{ txtToggleResize }}</button>
       <button>下载</button>
     </div>
     <div class="group">
@@ -22,16 +22,22 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { computed, defineComponent, onMounted, ref } from 'vue';
 import useMediaData from '@/composables/useMediaData';
 import useFullscreen from '@/composables/useFullscreen';
 import useToolbar from '@/composables/useToolbar';
+import { EMediaType } from '@/typings/media';
 
 export default defineComponent({
   setup() {
-    const { onPrev, onNext } = useMediaData();
+    const { media, onPrev, onNext } = useMediaData();
+    const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
+
     const { toggleFullscreen } = useFullscreen();
-    const { toggleSize } = useToolbar();
+    const { toggleSize, txtToggleResize } = useToolbar();
+
+    const mediaToolbarDOM = ref(null);
+    onMounted(() => (window.$mediaToolbarDOM = mediaToolbarDOM.value));
 
     // 关闭预览
     const closePreviewer = () => {
@@ -39,11 +45,14 @@ export default defineComponent({
     };
 
     return {
+      mediaToolbarDOM,
+      isMediaVideo,
       onPrev,
       onNext,
       closePreviewer,
       toggleFullscreen,
       toggleSize,
+      txtToggleResize,
     };
   },
 });
