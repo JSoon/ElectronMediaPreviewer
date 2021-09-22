@@ -5,6 +5,7 @@
 const path = require('path');
 const { BrowserWindow, ipcMain } = require('electron');
 const { IPC_CHANNELS } = require('./enums');
+const { isMacOS } = require('./platform');
 const config = require('../config/env');
 
 class MediaPreviewer {
@@ -33,9 +34,6 @@ class MediaPreviewer {
       minHeight: 640,
       center: true,
       frame: false,
-      titleBarStyle: 'hiddenInset',
-      transparent: true,
-      backgroundColor: '#00FFFFFF',
       autoHideMenuBar: true,
       nativeWindowOpen: false,
       show: true,
@@ -94,7 +92,6 @@ const useMediaPreviewer = (mainWindow) => {
   // 关闭预览
   async function onMediaPreviewClose(e) {
     console.log('IPC_CHANNELS.MEDIA_PREVIEW_CLOSE');
-    previewer.window.setBounds(previewer.initialState, true);
     previewer.close();
   }
 

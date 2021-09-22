@@ -31,6 +31,7 @@ module.exports = {
         arrowParens: "always",
         bracketSpacing: true,
         embeddedLanguageFormatting: "auto",
+        endOfLine: "auto",
         htmlWhitespaceSensitivity: "css",
         insertPragma: false,
         jsxBracketSameLine: false,
