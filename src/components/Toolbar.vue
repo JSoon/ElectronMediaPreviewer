@@ -8,7 +8,7 @@
       <button>放大</button>
       <button>缩小</button>
       <button>翻转</button>
-      <button>1:1</button>
+      <button @click="toggleSize">1:1</button>
       <button>下载</button>
     </div>
     <div class="group">
@@ -25,12 +25,13 @@
 import { defineComponent } from 'vue';
 import useMediaData from '@/composables/useMediaData';
 import useFullscreen from '@/composables/useFullscreen';
+import useToolbar from '@/composables/useToolbar';
 
 export default defineComponent({
   setup() {
-    const { toggleFullscreen } = useFullscreen();
-
     const { onPrev, onNext } = useMediaData();
+    const { toggleFullscreen } = useFullscreen();
+    const { toggleSize } = useToolbar();
 
     // 关闭预览
     const closePreviewer = () => {
@@ -42,6 +43,7 @@ export default defineComponent({
       onNext,
       closePreviewer,
       toggleFullscreen,
+      toggleSize,
     };
   },
 });
