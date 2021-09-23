@@ -6,6 +6,7 @@ const path = require('path');
 const { BrowserWindow, ipcMain, screen } = require('electron');
 const { IPC_CHANNELS } = require('./enums');
 const { isMacOS } = require('./platform');
+const { download } = require('electron-dl');
 const config = require('../config/env');
 
 const defaultWinWidth = 960;
@@ -48,6 +49,9 @@ class MediaPreviewer {
     previewWin.on('show', () => {
       this.initialState = this.window.getBounds();
       console.log('this.initialState', this.initialState);
+      download(previewWin, 'http://www.w3schools.com/html/mov_bbb.mp4', {
+        saveAs: true,
+      });
     });
 
     previewWin.on('closed', () => {

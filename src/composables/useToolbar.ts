@@ -74,6 +74,10 @@ export default function useToolbar() {
       window.$mediaImageDOM.setAttribute('height', `${naturalHeight}`);
     }
 
+    adjustOverflow({
+      w: naturalWidth,
+      h: naturalHeight,
+    });
     setTxtToggleResize(ETxtResize.fit);
     ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, {
       naturalWidth,
@@ -88,6 +92,7 @@ export default function useToolbar() {
       return;
     }
     window.$mediaPreviewerDOM?.classList.remove(originClass);
+    window.$mediaImageDOM.classList.remove(overflowClass);
 
     // 横图
     const isLandscape = window.$mediaImageDOM.getAttribute('width');
@@ -140,9 +145,15 @@ export default function useToolbar() {
     if (isLandscape) {
       const w = Number(isLandscape);
       window.$mediaImageDOM.setAttribute('width', `${w + scaleStep}`);
+      adjustOverflow({
+        w: w + scaleStep,
+      });
     } else {
       const h = Number(isPortrait);
       window.$mediaImageDOM.setAttribute('height', `${h + scaleStep}`);
+      adjustOverflow({
+        h: h + scaleStep,
+      });
     }
   };
 
@@ -163,30 +174,41 @@ export default function useToolbar() {
     if (isLandscape) {
       const w = Number(isLandscape);
       window.$mediaImageDOM.setAttribute('width', `${w - scaleStep}`);
+      adjustOverflow({
+        w: w - scaleStep,
+      });
     } else {
       const h = Number(isPortrait);
       window.$mediaImageDOM.setAttribute('height', `${h - scaleStep}`);
+      adjustOverflow({
+        h: h - scaleStep,
+      });
     }
   };
 
-  // 图片尺寸溢出样式
+  // 调整图片尺寸溢出样式
   const overflowClass = 'overflow';
-  function adjustOverflow() {
+  function adjustOverflow({ w, h }: { w?: number; h?: number }) {
     if (!window.$mediaImageDOM || !window.$mediaPreviewerDOM) {
       return;
     }
-    window.$mediaImageDOM.addEventListener('transitionend', () => {
-      if (!window.$mediaImageDOM || !window.$mediaPreviewerDOM) {
-        return;
-      }
-      // 设置样式
-      if (window.$mediaImageDOM.clientHeight > window.$mediaPreviewerDOM.clientHeight) {
-        window.$mediaImageDOM.classList.add(overflowClass);
-      } else {
-        window.$mediaImageDOM.classList.remove(overflowClass);
-      }
-    });
+    if ((w && w > window.$mediaPreviewerDOM.offsetWidth) || (h && h > window.$mediaPreviewerDOM.offsetHeight)) {
+      window.$mediaImageDOM.classList.add(overflowClass);
+    } else {
+      window.$mediaImageDOM.classList.remove(overflowClass);
+    }
   }
+
+  // 下载
+  const downloadURI = (uri: string, name: string) => {
+    window.open(uri);
+    // const link = document.createElement('a');
+    // link.download = name;
+    // link.href = uri;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+  };
 
   // 重置状态
   const reset = () => {
@@ -204,6 +226,7 @@ export default function useToolbar() {
     zoomIn,
     zoomOut,
     adjustOverflow,
+    downloadURI,
     reset,
   };
 }

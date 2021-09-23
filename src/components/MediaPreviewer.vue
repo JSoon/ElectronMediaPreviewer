@@ -36,7 +36,7 @@ import useFullscreen from '@/composables/useFullscreen';
 export default defineComponent({
   setup() {
     const { media } = useMediaData();
-    const { setImageInitSize, adjustOverflow } = useToolbar();
+    const { setImageInitSize } = useToolbar();
 
     const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
@@ -67,7 +67,6 @@ export default defineComponent({
       nextTick(() => {
         window.$mediaImageDOM = mediaImageDOM.value;
         window.$mediaVideoDOM = mediaVideoDOM.value;
-        adjustOverflow();
       });
     });
 
