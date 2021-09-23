@@ -5,9 +5,9 @@
       <button @click="turnToNext">下一页</button>
     </div>
     <div class="group">
-      <button :disabled="isMediaVideo">放大</button>
-      <button :disabled="isMediaVideo">缩小</button>
-      <button :disabled="isMediaVideo">翻转</button>
+      <button :disabled="isMediaVideo" @click="zoomIn">放大</button>
+      <button :disabled="isMediaVideo" @click="zoomOut">缩小</button>
+      <button :disabled="isMediaVideo" @click="rotate">翻转</button>
       <button :disabled="isMediaVideo" @click="toggleSize">{{ txtToggleResize }}</button>
       <button>下载</button>
     </div>
@@ -34,7 +34,7 @@ export default defineComponent({
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
 
     const { toggleFullscreen } = useFullscreen();
-    const { toggleSize, txtToggleResize } = useToolbar();
+    const { toggleSize, txtToggleResize, rotate, zoomIn, zoomOut } = useToolbar();
 
     const mediaToolbarDOM = ref(null);
     onMounted(() => (window.$mediaToolbarDOM = mediaToolbarDOM.value));
@@ -49,10 +49,14 @@ export default defineComponent({
       isMediaVideo,
       turnToPrev,
       turnToNext,
+
       closePreviewer,
       toggleFullscreen,
       toggleSize,
       txtToggleResize,
+      rotate,
+      zoomIn,
+      zoomOut,
     };
   },
 });

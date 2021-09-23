@@ -1,8 +1,19 @@
 <template>
   <div class="com-media-previewer" ref="mediaPreviewerDOM">
     <template v-if="media">
-      <img v-if="isMediaImage" class="media-item" :class="mediaClass" :src="media.url" alt="xxx" ref="mediaImageDOM" />
-      <video v-if="isMediaVideo" class="media-item" :class="mediaClass" controls ref="mediaVideoDOM">
+      <img
+        v-if="isMediaImage"
+        :key="media.id"
+        class="media-item"
+        :class="mediaClass"
+        :src="media.url"
+        alt=""
+        ref="mediaImageDOM"
+        :width="mediaImageWidth"
+        :height="mediaImageHeight"
+        @load="onMediaImageLoaded"
+      />
+      <video v-if="isMediaVideo" :key="media.id" class="media-item" :class="mediaClass" controls ref="mediaVideoDOM">
         <source :src="media.url" type="video/mp4" />
         Sorry, your browser doesn't support embedded videos.
       </video>
@@ -19,11 +30,13 @@
 import { defineComponent, computed, onMounted, ref, onBeforeUpdate, nextTick } from 'vue';
 import { EMediaType } from '@/typings/media';
 import useMediaData from '@/composables/useMediaData';
+import useToolbar from '@/composables/useToolbar';
 import useFullscreen from '@/composables/useFullscreen';
 
 export default defineComponent({
   setup() {
     const { media } = useMediaData();
+    const { setImageInitSize, adjustOverflow } = useToolbar();
 
     const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
@@ -39,12 +52,14 @@ export default defineComponent({
     };
 
     // 预览组件DOM全局变量注册
-    const mediaPreviewerDOM = ref(null);
-    onMounted(() => (window.$mediaPreviewerDOM = mediaPreviewerDOM.value));
+    const mediaPreviewerDOM = ref();
+    onMounted(() => {
+      window.$mediaPreviewerDOM = mediaPreviewerDOM.value;
+    });
 
     // 单个媒体组件DOM全局变量注册
-    const mediaImageDOM = ref(null);
-    const mediaVideoDOM = ref(null);
+    const mediaImageDOM = ref();
+    const mediaVideoDOM = ref();
     // 动态ref注册
     // 1. 数据变化
     onBeforeUpdate(() => {
@@ -52,14 +67,49 @@ export default defineComponent({
       nextTick(() => {
         window.$mediaImageDOM = mediaImageDOM.value;
         window.$mediaVideoDOM = mediaVideoDOM.value;
+        adjustOverflow();
       });
     });
+
+    // 初始化图片尺寸
+    const mediaImageWidth = ref();
+    const mediaImageHeight = ref();
+    const onMediaImageLoaded = function () {
+      let w;
+      let h;
+      // 原图比例
+      const ratio = mediaImageDOM.value.naturalWidth / mediaImageDOM.value.naturalHeight;
+      // 若是横图
+      if (ratio >= 1) {
+        const tempW = mediaPreviewerDOM.value.offsetWidth;
+        const tempH = mediaPreviewerDOM.value.offsetWidth / ratio;
+        // 若图片缩放后, 高度仍大于容器高度, 则再缩放一次
+        if (tempH > mediaPreviewerDOM.value.offsetHeight) {
+          w = null;
+          h = mediaPreviewerDOM.value.offsetHeight;
+        } else {
+          w = tempW;
+          h = null;
+        }
+      }
+      // 若是竖图
+      else {
+        w = null;
+        h = mediaPreviewerDOM.value.offsetHeight;
+      }
+      mediaImageWidth.value = w;
+      mediaImageHeight.value = h;
+      setImageInitSize(w, h);
+    };
 
     return {
       media,
       isMediaImage,
       isMediaVideo,
       mediaClass,
+      onMediaImageLoaded,
+      mediaImageWidth,
+      mediaImageHeight,
 
       mediaPreviewerDOM,
       mediaImageDOM,
@@ -79,24 +129,30 @@ export default defineComponent({
   right: 0;
   bottom: 0;
   left: 0;
-  display: flex;
   overflow: auto;
   background-color: #eee;
 
   .media-item {
-    display: block;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
     margin: auto;
-    object-fit: contain;
   }
 
   .media-image {
-    &.origin-size {
-      width: auto;
-      height: auto;
-      object-fit: none;
+    transition: all 0.3s;
+
+    &.overflow {
+      position: relative;
     }
+  }
+
+  .media-video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
   }
 
   .fullscreen-actions {

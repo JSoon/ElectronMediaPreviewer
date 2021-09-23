@@ -6,6 +6,7 @@ export enum EMediaType {
 export type TMedia = EMediaType.IMG | EMediaType.VIDEO;
 
 export interface IMediaItem {
+  id: number;
   // 媒体类型
   type: TMedia;
   // 媒体地址
