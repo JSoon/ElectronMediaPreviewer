@@ -12,7 +12,7 @@
       <button
         @click="
           () => {
-            downloadURI(media.url, 'file');
+            downloadURI(media.url);
           }
         "
       >

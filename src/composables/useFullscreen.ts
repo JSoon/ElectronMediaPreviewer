@@ -7,9 +7,11 @@ export default function useFullscreen() {
   document.onfullscreenchange = () => {
     if (document.fullscreenElement) {
       isFullscreen.value = true;
+      window.$mediaPreviewerDOM?.classList.add('fullscreen');
       console.log('进入全屏');
     } else {
       isFullscreen.value = false;
+      window.$mediaPreviewerDOM?.classList.remove('fullscreen');
       console.log('退出全屏');
     }
   };

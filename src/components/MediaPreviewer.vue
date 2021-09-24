@@ -131,6 +131,15 @@ export default defineComponent({
   overflow: auto;
   background-color: #eee;
 
+  &.fullscreen {
+    .media-image {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+
   .media-item {
     position: absolute;
     top: 0;

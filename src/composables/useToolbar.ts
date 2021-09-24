@@ -200,14 +200,22 @@ export default function useToolbar() {
   }
 
   // 下载
-  const downloadURI = (uri: string, name: string) => {
-    window.open(uri);
-    // const link = document.createElement('a');
-    // link.download = name;
-    // link.href = uri;
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
+  let lastDownloadClickTime = 0;
+  const downloadClickInterval = 3000;
+  const downloadURI = (uri: string) => {
+    if (!uri) {
+      message.warn('缺少下载资源', 1);
+      return;
+    }
+    const curDownloadClickTime = new Date().getTime();
+    // 防止短时间(毫秒)内多次点击下载
+    if (curDownloadClickTime - lastDownloadClickTime < downloadClickInterval) {
+      return;
+    }
+    lastDownloadClickTime = new Date().getTime();
+    ipcRenderer.send(IPC_CHANNELS.MEDIA_DOWNLOAD, {
+      uri,
+    });
   };
 
   // 重置状态

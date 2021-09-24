@@ -3,7 +3,7 @@
  */
 
 const path = require('path');
-const { BrowserWindow, ipcMain, screen } = require('electron');
+const { BrowserWindow, ipcMain, screen, dialog } = require('electron');
 const { IPC_CHANNELS } = require('./enums');
 const { isMacOS } = require('./platform');
 const { download } = require('electron-dl');
@@ -49,9 +49,6 @@ class MediaPreviewer {
     previewWin.on('show', () => {
       this.initialState = this.window.getBounds();
       console.log('this.initialState', this.initialState);
-      download(previewWin, 'http://www.w3schools.com/html/mov_bbb.mp4', {
-        saveAs: true,
-      });
     });
 
     previewWin.on('closed', () => {
@@ -140,12 +137,26 @@ const useMediaPreviewer = (mainWindow) => {
     previewer.window.setBounds(previewer.initialState, true);
   }
 
+  // 下载
+  async function onMediaDownload(e, { uri }) {
+    console.log('download uri', uri);
+    try {
+      await download(previewer.window, uri, {
+        saveAs: true,
+      });
+    } catch (error) {
+      dialog.showErrorBox('下载失败', error);
+    }
+  }
+
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW, onMediaPreview);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE, onMediaPreviewClose);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, onMediaResizeToOrigin);
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT, onMediaResizeToFit);
+
+  ipcMain.on(IPC_CHANNELS.MEDIA_DOWNLOAD, onMediaDownload);
 
   mainWindow.on('close', (e) => {
     console.log('主窗口要关闭了', mainWindow);
