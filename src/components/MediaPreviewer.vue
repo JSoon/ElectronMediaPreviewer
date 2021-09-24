@@ -20,8 +20,8 @@
     </template>
 
     <div v-if="isFullscreen" class="fullscreen-actions">
-      <button @click="closePreviewer">关闭预览</button>
-      <button @click="exitFullscreen">退出全屏</button>
+      <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
+      <button @click="exitFullscreen"><i class="iconfont icon-web-zoom-small" /></button>
     </div>
   </div>
 </template>
@@ -132,10 +132,17 @@ export default defineComponent({
   background-color: #eee;
 
   &.fullscreen {
+    background-color: #000;
+
     .media-image {
       position: absolute;
-      width: 100%;
-      height: 100%;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      width: 90%;
+      height: 90%;
+      margin: auto;
       object-fit: contain;
     }
   }
@@ -165,8 +172,33 @@ export default defineComponent({
 
   .fullscreen-actions {
     position: fixed;
-    top: 10px;
-    left: 10px;
+    top: 30px;
+    left: 30px;
+    padding: 0 10px;
+    background: #1d1d1d;
+    border-radius: 10px;
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    button {
+      padding: 15px 20px;
+      border: none;
+      background: none;
+
+      &:active {
+        .iconfont {
+          color: #555;
+        }
+      }
+    }
+
+    .iconfont {
+      color: #d2d2d2;
+      font-size: 30px;
+    }
   }
 }
 </style>

@@ -1,15 +1,24 @@
 <template>
   <div class="com-toolbar" ref="mediaToolbarDOM">
     <div class="group">
-      <button @click="turnToPrev">上一页</button>
-      <button @click="turnToNext">下一页</button>
+      <button @click="turnToPrev"><i class="iconfont icon-web-pl-arrow" /></button>
+      <button @click="turnToNext"><i class="iconfont icon-web-pr-arrow" /></button>
     </div>
     <div class="group">
-      <button :disabled="isMediaVideo" @click="zoomIn">放大</button>
-      <button :disabled="isMediaVideo" @click="zoomOut">缩小</button>
-      <button :disabled="isMediaVideo" @click="rotate">翻转</button>
-      <button :disabled="isMediaVideo" @click="toggleSize">{{ txtToggleResize }}</button>
-      <button
+      <button :disabled="isMediaVideo" @click="zoomIn">
+        <i class="iconfont icon-web-enlarge" />
+      </button>
+      <button :disabled="isMediaVideo" @click="zoomOut">
+        <i class="iconfont icon-web-narrow" />
+      </button>
+      <button :disabled="isMediaVideo" @click="rotate">
+        <i class="iconfont icon-web-rotate" />
+      </button>
+      <button :disabled="isMediaVideo" @click="toggleSize">
+        <i v-if="toggleResizeTxt === EResizeTxt.origin" class="iconfont icon-web-size" />
+        <i v-if="toggleResizeTxt === EResizeTxt.fit" class="iconfont icon-web-default" />
+      </button>
+      <!-- <button
         @click="
           () => {
             downloadURI(media.url);
@@ -17,14 +26,14 @@
         "
       >
         下载
-      </button>
+      </button> -->
     </div>
     <div class="group">
-      <button>更多</button>
+      <button><i class="iconfont icon-web-icon-more" /></button>
     </div>
     <div class="window-actions">
-      <button @click="toggleFullscreen">最大化</button>
-      <button @click="closePreviewer">关闭</button>
+      <button @click="toggleFullscreen"><i class="iconfont icon-web-zoom-large" /></button>
+      <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
     </div>
   </div>
 </template>
@@ -33,7 +42,7 @@
 import { computed, defineComponent, onMounted, ref } from 'vue';
 import useMediaData from '@/composables/useMediaData';
 import useFullscreen from '@/composables/useFullscreen';
-import useToolbar from '@/composables/useToolbar';
+import useToolbar, { EResizeTxt } from '@/composables/useToolbar';
 import { EMediaType } from '@/typings/media';
 
 export default defineComponent({
@@ -42,7 +51,7 @@ export default defineComponent({
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
 
     const { toggleFullscreen } = useFullscreen();
-    const { toggleSize, txtToggleResize, rotate, zoomIn, zoomOut, downloadURI } = useToolbar();
+    const { toggleSize, toggleResizeTxt, rotate, zoomIn, zoomOut, downloadURI } = useToolbar();
 
     const mediaToolbarDOM = ref(null);
     onMounted(() => (window.$mediaToolbarDOM = mediaToolbarDOM.value));
@@ -62,7 +71,8 @@ export default defineComponent({
       closePreviewer,
       toggleFullscreen,
       toggleSize,
-      txtToggleResize,
+      EResizeTxt,
+      toggleResizeTxt,
       rotate,
       zoomIn,
       zoomOut,
@@ -86,15 +96,40 @@ export default defineComponent({
   button {
     margin: 0 5px;
     -webkit-app-region: no-drag;
+    border: none;
+    background: none;
   }
 
   .group {
-    margin: 0 10px;
+    position: relative;
+    padding: 0 10px;
+
+    &:first-child {
+      &::before {
+        display: none;
+      }
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: block;
+      border-left: 1px solid #eee;
+      width: 1px;
+      height: 20px;
+    }
   }
 
   .window-actions {
     position: absolute;
-    right: 0;
+    right: 5px;
+
+    .iconfont {
+      font-size: 12px;
+    }
   }
 }
 </style>

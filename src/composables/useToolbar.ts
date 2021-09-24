@@ -5,13 +5,13 @@
 import { message } from 'ant-design-vue';
 import { reactive, toRefs } from 'vue';
 
-export enum ETxtResize {
+export enum EResizeTxt {
   origin = '1:1',
   fit = '固定',
 }
 
 interface IState {
-  txtToggleResize: ETxtResize;
+  toggleResizeTxt: EResizeTxt;
   rotate: number;
   imageInitWidth: number | null;
   imageInitHeight: number | null;
@@ -20,7 +20,7 @@ interface IState {
 // 默认状态
 const state: IState = reactive({
   // 尺寸切换文本
-  txtToggleResize: ETxtResize.origin,
+  toggleResizeTxt: EResizeTxt.origin,
   // 图片翻转角度
   rotate: 0,
   // 图片初始尺寸
@@ -37,8 +37,8 @@ export default function useToolbar() {
   const { ipcRenderer, IPC_CHANNELS } = window.electron;
 
   // 设置切换显示大小文本
-  const setTxtToggleResize = (txt: ETxtResize) => {
-    state.txtToggleResize = txt;
+  const setToggleResizeTxt = (txt: EResizeTxt) => {
+    state.toggleResizeTxt = txt;
   };
 
   // 图片尺寸显示大小切换
@@ -78,7 +78,7 @@ export default function useToolbar() {
       w: naturalWidth,
       h: naturalHeight,
     });
-    setTxtToggleResize(ETxtResize.fit);
+    setToggleResizeTxt(EResizeTxt.fit);
     ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, {
       naturalWidth,
       naturalHeight,
@@ -103,7 +103,7 @@ export default function useToolbar() {
       window.$mediaImageDOM.setAttribute('height', `${state.imageInitHeight}`);
     }
 
-    setTxtToggleResize(ETxtResize.origin);
+    setToggleResizeTxt(EResizeTxt.origin);
     ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT);
   };
 

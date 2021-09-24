@@ -26,6 +26,10 @@ export default defineComponent({
 </script>
 
 <style lang="less">
+* {
+  box-sizing: border-box;
+}
+
 html,
 body {
   width: 100%;
@@ -49,5 +53,18 @@ body {
 
 img {
   -webkit-user-drag: none;
+}
+
+button {
+  outline-width: 0;
+}
+
+.iconfont {
+  font-family: 'iconfont-web' !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+  -moz-osx-font-smoothing: grayscale;
 }
 </style>
