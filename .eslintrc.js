@@ -32,7 +32,7 @@ module.exports = {
         bracketSpacing: true,
         embeddedLanguageFormatting: "auto",
         endOfLine: "auto",
-        htmlWhitespaceSensitivity: "css",
+        htmlWhitespaceSensitivity: "ignore",
         insertPragma: false,
         jsxBracketSameLine: false,
         jsxSingleQuote: true,

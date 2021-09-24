@@ -18,21 +18,17 @@
         <i v-if="toggleResizeTxt === EResizeTxt.origin" class="iconfont icon-web-size" />
         <i v-if="toggleResizeTxt === EResizeTxt.fit" class="iconfont icon-web-default" />
       </button>
-      <!-- <button
-        @click="
-          () => {
-            downloadURI(media.url);
-          }
-        "
-      >
-        下载
-      </button> -->
     </div>
     <div class="group">
-      <button><i class="iconfont icon-web-icon-more" /></button>
+      <a-dropdown :trigger="['click']">
+        <template #overlay>
+          <ContextMenu />
+        </template>
+        <a-button type="link"><i class="iconfont icon-web-icon-more" /></a-button>
+      </a-dropdown>
     </div>
     <div class="window-actions">
-      <button @click="toggleFullscreen"><i class="iconfont icon-web-zoom-large" /></button>
+      <button @click="toggleFullscreen"><i class="iconfont icon-web-maximize" /></button>
       <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
     </div>
   </div>
@@ -44,14 +40,18 @@ import useMediaData from '@/composables/useMediaData';
 import useFullscreen from '@/composables/useFullscreen';
 import useToolbar, { EResizeTxt } from '@/composables/useToolbar';
 import { EMediaType } from '@/typings/media';
+import ContextMenu from '@/components/ContextMenu.vue';
 
 export default defineComponent({
+  components: {
+    ContextMenu,
+  },
   setup() {
     const { media, turnToPrev, turnToNext } = useMediaData();
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
 
     const { toggleFullscreen } = useFullscreen();
-    const { toggleSize, toggleResizeTxt, rotate, zoomIn, zoomOut, downloadURI } = useToolbar();
+    const { toggleSize, toggleResizeTxt, rotate, zoomIn, zoomOut } = useToolbar();
 
     const mediaToolbarDOM = ref(null);
     onMounted(() => (window.$mediaToolbarDOM = mediaToolbarDOM.value));
@@ -76,7 +76,6 @@ export default defineComponent({
       rotate,
       zoomIn,
       zoomOut,
-      downloadURI,
     };
   },
 });
@@ -95,9 +94,12 @@ export default defineComponent({
 
   button {
     margin: 0 5px;
+    padding: 0 5px;
     -webkit-app-region: no-drag;
     border: none;
     background: none;
+    color: #333;
+    cursor: initial;
   }
 
   .group {
@@ -127,7 +129,11 @@ export default defineComponent({
     position: absolute;
     right: 5px;
 
-    .iconfont {
+    .icon-web-maximize {
+      font-size: 13px;
+    }
+
+    .icon-web-close {
       font-size: 12px;
     }
   }

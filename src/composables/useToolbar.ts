@@ -218,6 +218,13 @@ export default function useToolbar() {
     });
   };
 
+  // 复制文件
+  const copyFile = (uri: string) => {
+    ipcRenderer.send(IPC_CHANNELS.MEDIA_COPY_FILE, {
+      uri,
+    });
+  };
+
   // 重置状态
   const reset = () => {
     resizeToFit();
@@ -235,6 +242,7 @@ export default function useToolbar() {
     zoomOut,
     adjustOverflow,
     downloadURI,
+    copyFile,
     reset,
   };
 }

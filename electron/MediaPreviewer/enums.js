@@ -8,6 +8,7 @@ const IPC_CHANNELS = {
   MEDIA_DOWNLOAD_START: 'media-download-start',
   MEDIA_DOWNLOAD_CANCEL: 'media-download-cancel',
   MEDIA_DOWNLOAD_COMPLETE: 'media-download-complete',
+  MEDIA_COPY_FILE: 'media-copy-file',
 };
 
 module.exports = {

@@ -21,7 +21,7 @@
 
     <div v-if="isFullscreen" class="fullscreen-actions">
       <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
-      <button @click="exitFullscreen"><i class="iconfont icon-web-zoom-small" /></button>
+      <button @click="exitFullscreen"><i class="iconfont icon-web-minimize" /></button>
     </div>
   </div>
 </template>
@@ -174,9 +174,12 @@ export default defineComponent({
     position: fixed;
     top: 30px;
     left: 30px;
-    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    height: 60px;
+    padding: 0 12px;
     background: #1d1d1d;
-    border-radius: 10px;
+    border-radius: 6px;
     opacity: 0.5;
 
     &:hover {
@@ -184,10 +187,11 @@ export default defineComponent({
     }
 
     button {
-      padding: 15px 20px;
+      padding: 15px;
       border: none;
       background: none;
 
+      &:hover,
       &:active {
         .iconfont {
           color: #555;
@@ -197,7 +201,14 @@ export default defineComponent({
 
     .iconfont {
       color: #d2d2d2;
-      font-size: 30px;
+    }
+
+    .icon-web-close {
+      font-size: 20px;
+    }
+
+    .icon-web-minimize {
+      font-size: 25px;
     }
   }
 }

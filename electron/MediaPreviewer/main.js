@@ -3,6 +3,7 @@
  */
 
 const path = require('path');
+const { copyFile } = require('fs/promises');
 const { BrowserWindow, ipcMain, screen, dialog } = require('electron');
 const { IPC_CHANNELS } = require('./enums');
 const { isMacOS } = require('./platform');
@@ -149,6 +150,16 @@ const useMediaPreviewer = (mainWindow) => {
     }
   }
 
+  // TODO: 复制
+  async function onMediaCopy(e, { uri }) {
+    // console.log('download uri', uri);
+    // try {
+    //   await copyFile();
+    // } catch (error) {
+    //   dialog.showErrorBox('复制失败', error);
+    // }
+  }
+
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW, onMediaPreview);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE, onMediaPreviewClose);
@@ -157,6 +168,7 @@ const useMediaPreviewer = (mainWindow) => {
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT, onMediaResizeToFit);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_DOWNLOAD, onMediaDownload);
+  ipcMain.on(IPC_CHANNELS.MEDIA_COPY_FILE, onMediaCopy);
 
   mainWindow.on('close', (e) => {
     console.log('主窗口要关闭了', mainWindow);
