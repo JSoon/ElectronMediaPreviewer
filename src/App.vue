@@ -67,4 +67,9 @@ button {
   -webkit-text-stroke-width: 0.2px;
   -moz-osx-font-smoothing: grayscale;
 }
+
+// Fix: Windows下无法点击下拉菜单
+.ant-dropdown {
+  -webkit-app-region: no-drag;
+}
 </style>
