@@ -211,6 +211,11 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
     }
   }
 
+  // TODO: 转发
+  async function onMediaForward(e, media) {
+    console.log('转发', media);
+  }
+
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW, onMediaPreview);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE, onMediaPreviewClose);
@@ -220,6 +225,7 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
 
   ipcMain.on(IPC_CHANNELS.MEDIA_DOWNLOAD, onMediaDownload);
   ipcMain.on(IPC_CHANNELS.MEDIA_COPY_FILE, onMediaCopy);
+  ipcMain.on(IPC_CHANNELS.MEDIA_FORWARD, onMediaForward);
 
   mainWindow.on('close', (e) => {
     console.log('主窗口要关闭了', mainWindow);

@@ -227,6 +227,16 @@ export default function useToolbar() {
     });
   };
 
+  // 转发
+  const forward = (media: IMediaItem) => {
+    // NOTE: 不能直接在IPC通信中传递ref对象
+    // NOTE: Sending non-standard JavaScript types such as DOM objects or special Electron objects will throw an exception.
+    // https://www.electronjs.org/docs/latest/api/ipc-renderer/#ipcrenderersendchannel-args
+    ipcRenderer.send(IPC_CHANNELS.MEDIA_FORWARD, {
+      ...media,
+    });
+  };
+
   // 重置状态
   const reset = () => {
     resizeToFit();
@@ -245,6 +255,7 @@ export default function useToolbar() {
     adjustOverflow,
     downloadURI,
     copyFile,
+    forward,
     reset,
   };
 }

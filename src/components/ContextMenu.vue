@@ -1,7 +1,7 @@
 <template>
   <a-menu>
     <a-menu-item key="1" @click="onCopy" v-if="isMediaImage">复制</a-menu-item>
-    <a-menu-item key="2">转发</a-menu-item>
+    <a-menu-item key="2" @click="onForward">转发</a-menu-item>
     <a-menu-item key="3" @click="onDownload">另存为</a-menu-item>
   </a-menu>
 </template>
@@ -18,7 +18,7 @@ export default defineComponent({
 
     const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
 
-    const { downloadURI, copyFile } = useToolbar();
+    const { downloadURI, copyFile, forward } = useToolbar();
 
     // 下载另存为
     const onDownload = () => {
@@ -36,11 +36,20 @@ export default defineComponent({
       copyFile(media.value);
     };
 
+    // 转发
+    const onForward = () => {
+      if (!media.value) {
+        return;
+      }
+      forward(media.value);
+    };
+
     return {
       isMediaImage,
       onDownload,
       downloadURI,
       onCopy,
+      onForward,
     };
   },
 });
