@@ -3,12 +3,12 @@
  */
 
 const path = require('path');
-const { copyFile } = require('fs/promises');
-const { BrowserWindow, ipcMain, screen, dialog } = require('electron');
+const { BrowserWindow, ipcMain, screen, dialog, app, clipboard, Notification, nativeImage } = require('electron');
 const { IPC_CHANNELS } = require('./enums');
-const { isMacOS } = require('./platform');
 const { download } = require('electron-dl');
 const config = require('../config/env');
+const { checkFileExists, copyImageToClipboard, copyFileToClipboard } = require('./utils');
+const md5 = require('md5');
 
 const defaultWinWidth = 960;
 const defaultWinHeight = 640;
@@ -84,9 +84,10 @@ class MediaPreviewer {
 
 /**
  * 使用预览
- * @param {BrowserWindow} mainWindow 程序主窗口
+ * @param {BrowserWindow} mainWindow  程序主窗口
+ * @param {string}        downloadDir 下载文件目录
  */
-const useMediaPreviewer = (mainWindow) => {
+const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   const previewer = new MediaPreviewer();
 
   // 打开预览
@@ -146,18 +147,68 @@ const useMediaPreviewer = (mainWindow) => {
         saveAs: true,
       });
     } catch (error) {
-      dialog.showErrorBox('下载失败', error);
+      dialog.showErrorBox('下载失败', error.message);
     }
   }
 
-  // TODO: 复制
-  async function onMediaCopy(e, { uri }) {
-    // console.log('download uri', uri);
-    // try {
-    //   await copyFile();
-    // } catch (error) {
-    //   dialog.showErrorBox('复制失败', error);
-    // }
+  /**
+   * 复制图片/视频
+   *
+   * @description 复制前先下载到本地临时文件地址, 下载成功后, 复制文件到剪切板
+   *
+   * @param {object} e      IpcMainEvent
+   * @param {string} type   复制文件类型: IMG, VIDEO
+   */
+  async function onMediaCopy(e, { uri, type }) {
+    console.log('type', type, 'uri', uri);
+
+    // 下载文件目录
+    const DownloadPath = `${app.getPath('temp')}/${downloadDir}/${md5(uri)}`;
+
+    try {
+      // 1. 下载文件
+      const downloadedItem = await download(previewer.window, uri, {
+        directory: DownloadPath,
+        async onStarted(item) {
+          const filePath = `${DownloadPath}/${item.getFilename()}`;
+          const fileMIME = item.getMimeType();
+          // 2. 判断文件是否已下载
+          const existed = await checkFileExists(filePath);
+          // 3. 若已下载, 则直接复制文件
+          if (existed) {
+            item.cancel();
+            console.log('文件已存在', filePath);
+
+            // new Notification({
+            //   title: '文件已存储',
+            //   body: filePath,
+            // }).show();
+
+            if (type === 'IMG') {
+              await copyImageToClipboard(filePath);
+            } else if (type === 'VIDEO') {
+              await copyFileToClipboard(filePath, fileMIME);
+            }
+
+            return;
+          }
+          // 4. 若未下载, 则进行下载
+        },
+      });
+
+      // 5. 复制下载的文件
+      const filePath = downloadedItem.getSavePath();
+      const fileMIME = downloadedItem.getMimeType();
+      console.log('文件下载到', filePath, fileMIME);
+
+      if (type === 'IMG') {
+        await copyImageToClipboard(filePath);
+      } else if (type === 'VIDEO') {
+        await copyFileToClipboard(filePath, fileMIME);
+      }
+    } catch (error) {
+      dialog.showErrorBox('复制失败', error.message);
+    }
   }
 
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW, onMediaPreview);

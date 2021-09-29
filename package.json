@@ -17,6 +17,7 @@
     "ant-design-vue": "^2.2.6",
     "core-js": "^3.6.5",
     "electron-dl": "^3.2.1",
+    "md5": "^2.3.0",
     "vue": "^3.0.0"
   },
   "devDependencies": {

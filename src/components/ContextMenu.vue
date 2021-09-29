@@ -1,6 +1,6 @@
 <template>
   <a-menu>
-    <a-menu-item key="1" @click="onCopy">复制</a-menu-item>
+    <a-menu-item key="1" @click="onCopy" v-if="isMediaImage">复制</a-menu-item>
     <a-menu-item key="2">转发</a-menu-item>
     <a-menu-item key="3" @click="onDownload">另存为</a-menu-item>
   </a-menu>
@@ -9,11 +9,14 @@
 <script lang="ts">
 import useMediaData from '@/composables/useMediaData';
 import useToolbar from '@/composables/useToolbar';
-import { defineComponent } from 'vue';
+import { EMediaType } from '@/typings/media';
+import { computed, defineComponent } from 'vue';
 
 export default defineComponent({
   setup() {
     const { media } = useMediaData();
+
+    const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
 
     const { downloadURI, copyFile } = useToolbar();
 
@@ -22,7 +25,7 @@ export default defineComponent({
       if (!media.value) {
         return;
       }
-      downloadURI(media.value.url);
+      downloadURI(media.value);
     };
 
     // 复制文件
@@ -30,10 +33,11 @@ export default defineComponent({
       if (!media.value) {
         return;
       }
-      copyFile(media.value.url);
+      copyFile(media.value);
     };
 
     return {
+      isMediaImage,
       onDownload,
       downloadURI,
       onCopy,

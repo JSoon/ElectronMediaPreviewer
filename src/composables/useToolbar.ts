@@ -4,6 +4,7 @@
  */
 import { message } from 'ant-design-vue';
 import { reactive, toRefs } from 'vue';
+import { IMediaItem } from '@/typings/media';
 
 export enum EResizeTxt {
   origin = '1:1',
@@ -202,8 +203,8 @@ export default function useToolbar() {
   // 下载
   let lastDownloadClickTime = 0;
   const downloadClickInterval = 3000;
-  const downloadURI = (uri: string) => {
-    if (!uri) {
+  const downloadURI = (media: IMediaItem) => {
+    if (!media.url) {
       message.warn('缺少下载资源', 1);
       return;
     }
@@ -214,14 +215,15 @@ export default function useToolbar() {
     }
     lastDownloadClickTime = new Date().getTime();
     ipcRenderer.send(IPC_CHANNELS.MEDIA_DOWNLOAD, {
-      uri,
+      uri: media.url,
     });
   };
 
   // 复制文件
-  const copyFile = (uri: string) => {
+  const copyFile = (media: IMediaItem) => {
     ipcRenderer.send(IPC_CHANNELS.MEDIA_COPY_FILE, {
-      uri,
+      type: media.type,
+      uri: media.url,
     });
   };
 

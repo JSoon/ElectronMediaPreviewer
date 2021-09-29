@@ -21,7 +21,10 @@ function createWindow() {
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
-  useMediaPreviewer(mainWindow);
+  useMediaPreviewer({
+    mainWindow,
+    downloadDir: 'HailuoMac/downloads',
+  });
 }
 
 // This method will be called when Electron has finished
