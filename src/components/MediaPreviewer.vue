@@ -190,13 +190,6 @@ export default defineComponent({
       padding: 15px;
       border: none;
       background: none;
-
-      &:hover,
-      &:active {
-        .iconfont {
-          color: #555;
-        }
-      }
     }
 
     .iconfont {

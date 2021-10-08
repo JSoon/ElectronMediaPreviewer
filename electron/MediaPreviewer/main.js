@@ -31,12 +31,17 @@ class MediaPreviewer {
       this.window = null;
     }
 
+    const maxWinWidth = screen.getPrimaryDisplay().workAreaSize.width;
+    const maxWinHeight = screen.getPrimaryDisplay().workAreaSize.height;
+
     // 创建新窗口
     const previewWin = new BrowserWindow({
       width: defaultWinWidth,
       height: defaultWinHeight,
       minWidth: defaultWinWidth,
       minHeight: defaultWinHeight,
+      maxWidth: maxWinWidth,
+      maxHeight: maxWinHeight,
       center: true,
       frame: false,
       autoHideMenuBar: true,
@@ -109,14 +114,19 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
     const { naturalWidth, naturalHeight, toolbarHeight } = data;
 
     // 若图片原始尺寸小于默认窗口尺寸, 则使用默认窗口尺寸进行居中计算
+    // 若图片原始尺寸大于默认窗口尺寸, 则使用屏幕尺寸进行居中计算
     let calcWidth = 0;
     let calcHeight = 0;
-    if (naturalWidth > defaultWinWidth) {
+    if (naturalWidth > width) {
+      calcWidth = width;
+    } else if (naturalWidth > defaultWinWidth && naturalWidth <= width) {
       calcWidth = naturalWidth;
     } else {
       calcWidth = defaultWinWidth;
     }
-    if (naturalHeight > defaultWinHeight) {
+    if (naturalHeight > height) {
+      calcHeight = height;
+    } else if (naturalHeight > defaultWinHeight && naturalHeight <= height) {
       calcHeight = naturalHeight;
     } else {
       calcHeight = defaultWinHeight;
@@ -127,8 +137,8 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
         x: Math.floor((width - calcWidth) / 2),
         y: Math.floor((height - calcHeight) / 2),
         // 因为布局原因, 窗口高度=工具栏高度+图片高度, 故图片在缩放至1:1原始尺寸时, 窗口高度需要加上工具栏高度
-        width: naturalWidth + toolbarHeight,
-        height: naturalHeight + toolbarHeight,
+        width: naturalWidth < width ? naturalWidth + toolbarHeight : width,
+        height: naturalHeight < height ? naturalHeight + toolbarHeight : height,
       },
       true
     );

@@ -100,6 +100,10 @@ export default defineComponent({
     background: none;
     color: #333;
     cursor: initial;
+
+    &:disabled {
+      color: #ccc;
+    }
   }
 
   .group {
