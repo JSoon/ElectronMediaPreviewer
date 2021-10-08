@@ -224,6 +224,8 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   // TODO: 转发
   async function onMediaForward(e, media) {
     console.log('转发', media);
+    // 应用自定义逻辑
+    // ...
   }
 
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW, onMediaPreview);
