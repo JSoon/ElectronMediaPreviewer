@@ -13,8 +13,8 @@ const state: IState = reactive({
   index: 0,
   media: null,
   mediaList: [],
-  hasPrev: true,
-  hasNext: true,
+  hasPrev: false,
+  hasNext: false,
 });
 
 // 数据初始化
@@ -38,10 +38,12 @@ function updatePagerState(state: IState) {
   // 预览数据不止一条
   if (state.index === 0) {
     state.hasPrev = false;
+    state.hasNext = true;
   } else if (state.index > 0 && state.index < state.mediaList.length - 1) {
     state.hasPrev = true;
     state.hasNext = true;
   } else {
+    state.hasPrev = true;
     state.hasNext = false;
   }
 }
