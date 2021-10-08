@@ -3,11 +3,18 @@ import { IMediaData } from '@/typings/media';
 import useToolbar from './useToolbar';
 import { message } from 'ant-design-vue';
 
+interface IState extends IMediaData {
+  hasPrev: boolean;
+  hasNext: boolean;
+}
+
 // 默认状态
-const state: IMediaData = reactive({
+const state: IState = reactive({
   index: 0,
   media: null,
   mediaList: [],
+  hasPrev: true,
+  hasNext: true,
 });
 
 // 数据初始化
@@ -17,7 +24,27 @@ ipcRenderer.on(IPC_CHANNELS.MEDIA_PREVIEW, (e: any, data: IMediaData) => {
   state.index = data.index;
   state.media = data.media;
   state.mediaList = data.mediaList;
+  updatePagerState(state);
 });
+
+// 更新分页器状态
+function updatePagerState(state: IState) {
+  // 预览数据仅有一条
+  if (state.mediaList.length <= 1) {
+    state.hasPrev = false;
+    state.hasNext = false;
+    return;
+  }
+  // 预览数据不止一条
+  if (state.index === 0) {
+    state.hasPrev = false;
+  } else if (state.index > 0 && state.index < state.mediaList.length - 1) {
+    state.hasPrev = true;
+    state.hasNext = true;
+  } else {
+    state.hasNext = false;
+  }
+}
 
 export default function useMediaData() {
   const { reset } = useToolbar();
@@ -30,6 +57,7 @@ export default function useMediaData() {
     }
     state.index -= 1;
     state.media = state.mediaList[state.index];
+    updatePagerState(state);
     reset();
   };
 
@@ -41,6 +69,7 @@ export default function useMediaData() {
     }
     state.index += 1;
     state.media = state.mediaList[state.index];
+    updatePagerState(state);
     reset();
   };
 

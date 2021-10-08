@@ -21,7 +21,7 @@ class MediaPreviewer {
     // 预览媒体项索引号
     index = 0,
     // 预览媒体项
-    media = '',
+    media = null,
     // 预览媒体列表
     mediaList = [],
   } = {}) {

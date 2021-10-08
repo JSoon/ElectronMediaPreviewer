@@ -1,8 +1,8 @@
 <template>
   <div class="com-toolbar" ref="mediaToolbarDOM">
     <div class="group">
-      <button @click="turnToPrev"><i class="iconfont icon-web-pl-arrow" /></button>
-      <button @click="turnToNext"><i class="iconfont icon-web-pr-arrow" /></button>
+      <button :disabled="!hasPrev" @click="turnToPrev"><i class="iconfont icon-web-pl-arrow" /></button>
+      <button :disabled="!hasNext" @click="turnToNext"><i class="iconfont icon-web-pr-arrow" /></button>
     </div>
     <div class="group">
       <button :disabled="isMediaVideo" @click="zoomIn">
@@ -47,7 +47,7 @@ export default defineComponent({
     ContextMenu,
   },
   setup() {
-    const { media, turnToPrev, turnToNext } = useMediaData();
+    const { media, turnToPrev, turnToNext, hasPrev, hasNext } = useMediaData();
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
 
     const { toggleFullscreen } = useFullscreen();
@@ -67,6 +67,8 @@ export default defineComponent({
       isMediaVideo,
       turnToPrev,
       turnToNext,
+      hasPrev,
+      hasNext,
 
       closePreviewer,
       toggleFullscreen,
