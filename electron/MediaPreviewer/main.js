@@ -62,9 +62,12 @@ class MediaPreviewer {
       this.window = null;
     });
 
+    // 开发环境
     if (config.env === 'development') {
       previewWin.loadURL(config.url);
-    } else {
+    }
+    // 生产环境
+    else {
       previewWin.loadFile(config.url);
     }
 
