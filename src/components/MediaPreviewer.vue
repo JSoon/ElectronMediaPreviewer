@@ -1,22 +1,27 @@
 <template>
   <div class="com-media-previewer" ref="mediaPreviewerDOM">
     <template v-if="media">
-      <img
-        v-if="isMediaImage"
-        :key="media.id"
-        class="media-item"
-        :class="mediaClass"
-        :src="media.url"
-        alt=""
-        ref="mediaImageDOM"
-        :width="mediaImageWidth"
-        :height="mediaImageHeight"
-        @load="onMediaImageLoaded"
-      />
-      <video v-if="isMediaVideo" :key="media.id" class="media-item" :class="mediaClass" controls ref="mediaVideoDOM">
-        <source :src="media.url" type="video/mp4" />
-        Sorry, your browser doesn't support embedded videos.
-      </video>
+      <a-dropdown :trigger="['contextmenu']">
+        <img
+          v-if="isMediaImage"
+          :key="media.id"
+          class="media-item"
+          :class="mediaClass"
+          :src="media.url"
+          alt=""
+          ref="mediaImageDOM"
+          :width="mediaImageWidth"
+          :height="mediaImageHeight"
+          @load="onMediaImageLoaded"
+        />
+        <video v-if="isMediaVideo" :key="media.id" class="media-item" :class="mediaClass" controls ref="mediaVideoDOM">
+          <source :src="media.url" type="video/mp4" />
+          Sorry, your browser doesn't support embedded videos.
+        </video>
+        <template #overlay>
+          <ContextMenu />
+        </template>
+      </a-dropdown>
     </template>
 
     <div v-if="isFullscreen" class="fullscreen-actions">
@@ -32,8 +37,12 @@ import { EMediaType } from '@/typings/media';
 import useMediaData from '@/composables/useMediaData';
 import useToolbar from '@/composables/useToolbar';
 import useFullscreen from '@/composables/useFullscreen';
+import ContextMenu from '@/components/ContextMenu.vue';
 
 export default defineComponent({
+  components: {
+    ContextMenu,
+  },
   setup() {
     const { media } = useMediaData();
     const { setImageInitSize } = useToolbar();
