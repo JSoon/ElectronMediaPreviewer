@@ -14,7 +14,16 @@
           :height="mediaImageHeight"
           @load="onMediaImageLoaded"
         />
-        <video v-if="isMediaVideo" :key="media.id" class="media-item" :class="mediaClass" controls ref="mediaVideoDOM">
+        <video
+          v-if="isMediaVideo"
+          :key="media.id"
+          class="media-item video-item"
+          :class="mediaClass"
+          controls
+          controlslist="nodownload nofullscreen noremoteplayback"
+          disablePictureInPicture
+          ref="mediaVideoDOM"
+        >
           <source :src="media.url" type="video/mp4" />
           Sorry, your browser doesn't support embedded videos.
         </video>
@@ -163,6 +172,11 @@ export default defineComponent({
     bottom: 0;
     left: 0;
     margin: auto;
+  }
+
+  // 视频由于无法隐藏更多菜单按钮，且无伪类能够控制其no-drag属性，故视频整个禁用拖拽
+  video::-webkit-media-controls-panel {
+    -webkit-app-region: no-drag;
   }
 
   .media-image {
