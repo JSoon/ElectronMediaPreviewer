@@ -57,6 +57,7 @@ export default defineComponent({
     const { isFullscreen, exitFullscreen } = useFullscreen();
     // 关闭预览
     const closePreviewer = () => {
+      console.log('333333333333333333333333333333333');
       window.close();
     };
 
