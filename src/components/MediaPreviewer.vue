@@ -24,6 +24,7 @@
           disablePictureInPicture
           ref="mediaVideoDOM"
           autoplay="autoplay"
+          muted
         >
           <source :src="media.url" type="video/mp4" />
           Sorry, your browser doesn't support embedded videos.
