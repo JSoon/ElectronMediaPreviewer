@@ -23,6 +23,7 @@
           controlslist="nodownload nofullscreen noremoteplayback"
           disablePictureInPicture
           ref="mediaVideoDOM"
+          autoplay="autoplay"
         >
           <source :src="media.url" type="video/mp4" />
           Sorry, your browser doesn't support embedded videos.

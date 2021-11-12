@@ -43,7 +43,7 @@ class MediaPreviewer {
       maxWidth: maxWinWidth,
       maxHeight: maxWinHeight,
       center: true,
-      frame: false,
+      // frame: false,
       autoHideMenuBar: true,
       nativeWindowOpen: false,
       show: true,
