@@ -3,7 +3,7 @@
  */
 
 const path = require('path');
-const { BrowserWindow, ipcMain, screen, dialog, app, clipboard, Notification, nativeImage } = require('electron');
+const { BrowserWindow, ipcMain, screen, dialog, app } = require('electron');
 const { IPC_CHANNELS } = require('./enums');
 const { download } = require('electron-dl');
 const config = require('../config/env');
@@ -163,7 +163,7 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   }
 
   // 下载
-  async function onMediaDownload(e, { uri }) {
+  async function onMediaDownload(e, { type, uri }) {
     console.log('download uri', uri);
     try {
       await download(previewer.window, uri, {

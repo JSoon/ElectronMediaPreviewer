@@ -24,12 +24,15 @@ export default (): void => {
     }
   });
 
-  // 左右切换上下页
+  // 切换上下页
   document.addEventListener('keyup', (e) => {
-    if (e.code === 'ArrowLeft') {
+    // 左键/上键
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
       e.preventDefault();
       turnToPrev();
-    } else if (e.code === 'ArrowRight') {
+    }
+    // 右键/下键
+    else if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
       e.preventDefault();
       turnToNext();
     }

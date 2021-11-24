@@ -215,6 +215,7 @@ export default function useToolbar() {
     }
     lastDownloadClickTime = new Date().getTime();
     ipcRenderer.send(IPC_CHANNELS.MEDIA_DOWNLOAD, {
+      type: media.type,
       uri: media.url,
     });
   };

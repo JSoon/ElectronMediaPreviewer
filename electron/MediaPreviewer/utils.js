@@ -54,9 +54,29 @@ async function copyFileToClipboard(filePath, fileMIME) {
   return filePath;
 }
 
+// 生成下载文件名称 (暂未使用, electron-dl 不支持动态修改文件名, 需要获取文件 MIME 来生成文件后缀)
+// type: 'IMG' 或 'VIDEO'
+const getFilename = (type) => {
+  const d = new Date();
+  const year = d.getFullYear().toString();
+  let month = d.getMonth() + 1;
+  month = month < 10 ? `0${month}` : month.toString();
+  let day = d.getDate();
+  day = day < 10 ? `0${day}` : day.toString();
+  let hour = d.getHours();
+  hour = hour < 10 ? `0${hour}` : hour.toString();
+  let minute = d.getMinutes();
+  minute = minute < 10 ? `0${minute}` : minute.toString();
+  let second = d.getSeconds();
+  second = second < 10 ? `0${second}` : second.toString();
+
+  return `海螺${type === 'IMG' ? '图片' : '视频'}_${year}${month}${day}_${hour}${minute}${second}`;
+};
+
 module.exports = {
   checkFileExists,
   checkDirectoryExists,
   copyImageToClipboard,
   copyFileToClipboard,
+  getFilename,
 };
