@@ -34,11 +34,6 @@
         </template>
       </a-dropdown>
     </template>
-
-    <div v-if="isFullscreen" class="fullscreen-actions">
-      <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
-      <button @click="exitFullscreen"><i class="iconfont icon-web-minimize" /></button>
-    </div>
   </div>
 </template>
 
@@ -47,7 +42,6 @@ import { defineComponent, computed, onMounted, ref, onBeforeUpdate, nextTick } f
 import { EMediaType } from '@/typings/media';
 import useMediaData from '@/composables/useMediaData';
 import useToolbar from '@/composables/useToolbar';
-import useFullscreen from '@/composables/useFullscreen';
 import ContextMenu from '@/components/ContextMenu.vue';
 
 export default defineComponent({
@@ -64,12 +58,6 @@ export default defineComponent({
     const mediaClass = computed(() => {
       return media.value?.type === EMediaType.IMG ? 'media-image' : 'media-video';
     });
-
-    const { isFullscreen, exitFullscreen } = useFullscreen();
-    // 关闭预览
-    const closePreviewer = () => {
-      window.close();
-    };
 
     // 预览组件DOM全局变量注册
     const mediaPreviewerDOM = ref();
@@ -133,9 +121,6 @@ export default defineComponent({
       mediaPreviewerDOM,
       mediaImageDOM,
       mediaVideoDOM,
-      isFullscreen,
-      exitFullscreen,
-      closePreviewer,
     };
   },
 });
@@ -174,6 +159,7 @@ export default defineComponent({
     bottom: 0;
     left: 0;
     margin: auto;
+    -webkit-app-region: no-drag;
   }
 
   // 视频由于无法隐藏更多菜单按钮，且无伪类能够控制其no-drag属性，故视频整个禁用拖拽

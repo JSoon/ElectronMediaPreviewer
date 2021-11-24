@@ -10,8 +10,8 @@ const config = require('../config/env');
 const { checkFileExists, copyImageToClipboard, copyFileToClipboard } = require('./utils');
 const md5 = require('md5');
 
-const defaultWinWidth = 960;
-const defaultWinHeight = 640;
+const defaultWinWidth = 1024;
+const defaultWinHeight = 700;
 
 class MediaPreviewer {
   window = null;
@@ -108,6 +108,16 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   async function onMediaPreviewClose(e) {
     console.log('IPC_CHANNELS.MEDIA_PREVIEW_CLOSE');
     previewer.close();
+  }
+
+  // 进入/退出全屏 (最大化)
+  function onMediaFullscreenToggle(e) {
+    if (!previewer.window.isMaximized()) {
+      previewer.window.maximize();
+    } else {
+      previewer.window.unmaximize();
+    }
+    return previewer.window.isMaximized();
   }
 
   // 切换到1:1原始尺寸
@@ -234,6 +244,8 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW, onMediaPreview);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE, onMediaPreviewClose);
+
+  ipcMain.handle(IPC_CHANNELS.MEDIA_FULLSCREEN_TOGGLE, onMediaFullscreenToggle);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, onMediaResizeToOrigin);
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT, onMediaResizeToFit);

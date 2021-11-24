@@ -7,6 +7,9 @@ contextBridge.exposeInMainWorld('electron', {
     send: (channel, ...args) => {
       ipcRenderer.send(channel, ...args);
     },
+    invoke: (channel, ...args) => {
+      return ipcRenderer.invoke(channel, ...args);
+    },
     // NOTE: ipcRenderer.on不会暴露到renderer进程中, 需要手动指定
     // https://stackoverflow.com/questions/66913598/ipcrenderer-on-is-not-a-function
     on: (channel, listener) => {

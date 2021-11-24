@@ -1,47 +1,18 @@
 import { ref } from 'vue';
 
 export default function useFullscreen() {
+  const { ipcRenderer, IPC_CHANNELS } = window.electron;
   const isFullscreen = ref(false);
 
-  // 监听全屏状态变化
-  document.onfullscreenchange = () => {
-    if (document.fullscreenElement) {
-      isFullscreen.value = true;
-      window.$mediaPreviewerDOM?.classList.add('fullscreen');
-      console.log('进入全屏');
-    } else {
-      isFullscreen.value = false;
-      window.$mediaPreviewerDOM?.classList.remove('fullscreen');
-      console.log('退出全屏');
-    }
-  };
-
-  // 进入全屏
-  const enterFullscreen = (ele: HTMLElement) => {
-    ele.requestFullscreen();
-  };
-
-  // 瑞出全屏
-  const exitFullscreen = () => {
-    document.exitFullscreen();
-  };
-
   // 切换全屏/非全屏
-  const toggleFullscreen = () => {
-    if (!window.$mediaPreviewerDOM) {
-      return;
-    }
-    if (isFullscreen.value) {
-      exitFullscreen();
-    } else {
-      enterFullscreen(window.$mediaPreviewerDOM);
-    }
+  const toggleFullscreen = async () => {
+    const result = await ipcRenderer.invoke(IPC_CHANNELS.MEDIA_FULLSCREEN_TOGGLE);
+    console.log('result', result);
+    isFullscreen.value = result;
   };
 
   return {
     isFullscreen,
-    enterFullscreen,
-    exitFullscreen,
     toggleFullscreen,
   };
 }

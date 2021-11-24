@@ -1,5 +1,5 @@
 <template>
-  <div class="com-toolbar" ref="mediaToolbarDOM">
+  <div class="com-toolbar" ref="mediaToolbarDOM" @dblclick.self="toggleFullscreen">
     <div class="group">
       <button :disabled="!hasPrev" @click="turnToPrev"><i class="iconfont icon-web-pl-arrow" /></button>
       <button :disabled="!hasNext" @click="turnToNext"><i class="iconfont icon-web-pr-arrow" /></button>
@@ -28,7 +28,8 @@
       </a-dropdown>
     </div>
     <div class="window-actions">
-      <button @click="toggleFullscreen"><i class="iconfont icon-web-maximize" /></button>
+      <button v-if="!isFullscreen" @click="toggleFullscreen"><i class="iconfont icon-web-maximize" /></button>
+      <button v-else @click="toggleFullscreen"><i class="iconfont icon-web-minimize" /></button>
       <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
     </div>
   </div>
@@ -50,7 +51,7 @@ export default defineComponent({
     const { media, turnToPrev, turnToNext, hasPrev, hasNext } = useMediaData();
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
 
-    const { toggleFullscreen } = useFullscreen();
+    const { isFullscreen, toggleFullscreen } = useFullscreen();
     const { toggleSize, toggleResizeTxt, rotate, zoomIn, zoomOut } = useToolbar();
 
     const mediaToolbarDOM = ref(null);
@@ -71,6 +72,7 @@ export default defineComponent({
       hasNext,
 
       closePreviewer,
+      isFullscreen,
       toggleFullscreen,
       toggleSize,
       EResizeTxt,
@@ -135,7 +137,8 @@ export default defineComponent({
     position: absolute;
     right: 5px;
 
-    .icon-web-maximize {
+    .icon-web-maximize,
+    .icon-web-minimize {
       font-size: 13px;
     }
 
