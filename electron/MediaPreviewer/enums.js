@@ -2,6 +2,8 @@
 const IPC_CHANNELS = {
   MEDIA_PREVIEW: 'media-preview',
   MEDIA_PREVIEW_CLOSE: 'media-preview-close',
+  MEDIA_GET_PREVIEWER_MAXIMIZED: 'media-get-previewer-maximized',
+  MEDIA_GET_PREVIEWER_SIZE: 'media-get-previewer-size',
   MEDIA_RESIZE_TO_ORIGIN: 'media-resize-to-origin',
   MEDIA_RESIZE_TO_FIT: 'media-resize-to-fit',
   MEDIA_FULLSCREEN_TOGGLE: 'media-fullscreen-toggle',

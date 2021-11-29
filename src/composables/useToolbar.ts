@@ -14,8 +14,8 @@ export enum EResizeTxt {
 interface IState {
   toggleResizeTxt: EResizeTxt;
   rotate: number;
-  imageInitWidth: number | null;
-  imageInitHeight: number | null;
+  imageInitWidth: number;
+  imageInitHeight: number;
 }
 
 // 默认状态
@@ -25,8 +25,8 @@ const state: IState = reactive({
   // 图片翻转角度
   rotate: 0,
   // 图片初始尺寸
-  imageInitWidth: null,
-  imageInitHeight: null,
+  imageInitWidth: 0,
+  imageInitHeight: 0,
 });
 
 // 缩放倍数范围
@@ -66,25 +66,19 @@ export default function useToolbar() {
     const naturalWidth = window.$mediaImageDOM.naturalWidth;
     const naturalHeight = window.$mediaImageDOM.naturalHeight;
 
-    // 横图
-    const isLandscape = window.$mediaImageDOM.getAttribute('width');
-    // 若图片为横图, 则放大宽度; 否则放大高度
-    if (isLandscape) {
-      window.$mediaImageDOM.setAttribute('width', `${naturalWidth}`);
-    } else {
-      window.$mediaImageDOM.setAttribute('height', `${naturalHeight}`);
-    }
+    window.$mediaImageDOM.setAttribute('width', `${naturalWidth}`);
+    window.$mediaImageDOM.setAttribute('height', `${naturalHeight}`);
+
+    ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, {
+      naturalWidth,
+      naturalHeight,
+    });
 
     adjustOverflow({
       w: naturalWidth,
       h: naturalHeight,
     });
     setToggleResizeTxt(EResizeTxt.fit);
-    ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, {
-      naturalWidth,
-      naturalHeight,
-      toolbarHeight: window.$mediaToolbarDOM?.clientHeight || 0,
-    });
   };
 
   // 切换到固定尺寸
@@ -95,17 +89,30 @@ export default function useToolbar() {
     window.$mediaPreviewerDOM?.classList.remove(originClass);
     window.$mediaImageDOM.classList.remove(overflowClass);
 
-    // 横图
-    const isLandscape = window.$mediaImageDOM.getAttribute('width');
-    // 若图片为横图, 则设置宽度; 否则设置高度
-    if (isLandscape) {
-      window.$mediaImageDOM.setAttribute('width', `${state.imageInitWidth}`);
-    } else {
-      window.$mediaImageDOM.setAttribute('height', `${state.imageInitHeight}`);
+    window.$mediaImageDOM.setAttribute('width', `${state.imageInitWidth}`);
+    window.$mediaImageDOM.setAttribute('height', `${state.imageInitHeight}`);
+
+    ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT);
+
+    adjustOverflow({
+      w: state.imageInitWidth,
+      h: state.imageInitHeight,
+    });
+    setToggleResizeTxt(EResizeTxt.origin);
+  };
+
+  // 窗口最大化切换
+  const toggleMaximize = async () => {
+    if (!window.$mediaImageDOM) {
+      return;
     }
 
-    setToggleResizeTxt(EResizeTxt.origin);
-    ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT);
+    // 设置图片尺寸
+    adjustOverflow({
+      w: window.$mediaImageDOM.width,
+      h: window.$mediaImageDOM.height,
+      fitContain: true,
+    });
   };
 
   // 翻转
@@ -113,20 +120,101 @@ export default function useToolbar() {
     if (!window.$mediaImageDOM) {
       return;
     }
+
     state.rotate += 90;
     // 若是90的奇数倍, 则缩小.x倍
     if ((state.rotate / 90) % 2 === 1) {
-      window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg) scale(.8)`;
+      window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg)`;
     } else {
-      window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg) scale(1)`;
+      window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg)`;
     }
+
+    // 设置图片尺寸
+    adjustOverflow({
+      w: window.$mediaImageDOM.width,
+      h: window.$mediaImageDOM.height,
+    });
+  };
+
+  // 设置图片适配模式为包含 (即图片能够在预览窗口完整显示)
+  const setImageFitContain = (mediaImageDOM: HTMLImageElement, previewerSize: { width: number; height: number }) => {
+    console.log('previewerSize', JSON.stringify(previewerSize));
+    let w;
+    let h;
+    // 原图比例
+    const ratio = mediaImageDOM.naturalWidth / mediaImageDOM.naturalHeight;
+
+    // 横图: 宽大于高
+    if (ratio > 1) {
+      const tempW = previewerSize.width;
+      const tempH = previewerSize.width / ratio;
+      // 若图片缩放后, 高度仍大于容器高度, 则再缩放一次
+      if (tempH > previewerSize.height) {
+        w = previewerSize.height * ratio;
+        h = previewerSize.height;
+      } else {
+        w = tempW;
+        h = tempH;
+      }
+    }
+    // 竖图: 宽小于高
+    else {
+      const tempW = previewerSize.height * ratio;
+      const tempH = previewerSize.height;
+      // 若图片缩放后, 宽度仍大于容器宽度, 则再缩放一次
+      if (tempW > previewerSize.width) {
+        w = previewerSize.width;
+        h = previewerSize.width / ratio;
+      } else {
+        w = tempW;
+        h = tempH;
+      }
+    }
+
+    mediaImageDOM.width = w;
+    mediaImageDOM.height = h;
+
+    adjustOverflow({
+      w,
+      h,
+    });
+
+    return { w, h };
   };
 
   // 设置图片初始化尺寸
   const setImageInitSize = (w: IState['imageInitWidth'], h: IState['imageInitHeight']) => {
     state.imageInitWidth = w;
     state.imageInitHeight = h;
-    console.log('state', state.imageInitWidth, state.imageInitHeight);
+
+    console.log('image init size', state.imageInitWidth, state.imageInitHeight);
+  };
+
+  // 图片按比例缩放尺寸计算
+  type TZoom = 'in' | 'out';
+  const zoomSize = (mediaImageDOM: HTMLImageElement, zoom: TZoom = 'in') => {
+    const ratio = mediaImageDOM.naturalWidth / mediaImageDOM.naturalHeight;
+    let w = mediaImageDOM.clientWidth;
+    let h = mediaImageDOM.clientHeight;
+    // 放大
+    if (zoom === 'in') {
+      w += scaleStep;
+    }
+    // 缩小
+    else {
+      w -= scaleStep;
+    }
+    h = w / ratio;
+
+    mediaImageDOM.style.display = 'none';
+    // 更新图片尺寸
+    mediaImageDOM.setAttribute('width', `${w}`);
+    mediaImageDOM.setAttribute('height', `${h}`);
+
+    adjustOverflow({
+      w,
+      h,
+    });
   };
 
   // 放大
@@ -134,28 +222,13 @@ export default function useToolbar() {
     if (!window.$mediaImageDOM) {
       return;
     }
+
     if (window.$mediaImageDOM.clientWidth > maxWidth) {
       message.info('已经放至最大了', 1);
       return;
     }
-    // 横图
-    const isLandscape = window.$mediaImageDOM.getAttribute('width');
-    // 竖图
-    const isPortrait = window.$mediaImageDOM.getAttribute('height');
-    // 若图片为横图, 则放大宽度; 否则放大高度
-    if (isLandscape) {
-      const w = Number(isLandscape);
-      window.$mediaImageDOM.setAttribute('width', `${w + scaleStep}`);
-      adjustOverflow({
-        w: w + scaleStep,
-      });
-    } else {
-      const h = Number(isPortrait);
-      window.$mediaImageDOM.setAttribute('height', `${h + scaleStep}`);
-      adjustOverflow({
-        h: h + scaleStep,
-      });
-    }
+
+    zoomSize(window.$mediaImageDOM, 'in');
   };
 
   // 缩小
@@ -163,41 +236,57 @@ export default function useToolbar() {
     if (!window.$mediaImageDOM) {
       return;
     }
+
     if (window.$mediaImageDOM.clientWidth < minWidth) {
       message.info('已经缩至最小了', 1);
       return;
     }
-    // 横图
-    const isLandscape = window.$mediaImageDOM.getAttribute('width');
-    // 竖图
-    const isPortrait = window.$mediaImageDOM.getAttribute('height');
-    // 若图片为竖图, 则放大高度; 否则放大宽度
-    if (isLandscape) {
-      const w = Number(isLandscape);
-      window.$mediaImageDOM.setAttribute('width', `${w - scaleStep}`);
-      adjustOverflow({
-        w: w - scaleStep,
-      });
-    } else {
-      const h = Number(isPortrait);
-      window.$mediaImageDOM.setAttribute('height', `${h - scaleStep}`);
-      adjustOverflow({
-        h: h - scaleStep,
-      });
-    }
+
+    zoomSize(window.$mediaImageDOM, 'out');
   };
 
   // 调整图片尺寸溢出样式
   const overflowClass = 'overflow';
-  function adjustOverflow({ w, h }: { w?: number; h?: number }) {
-    if (!window.$mediaImageDOM || !window.$mediaPreviewerDOM) {
+  async function adjustOverflow({
+    // 图片宽度
+    w,
+    // 图片高度
+    h,
+    // 图片适配模式是否为contain
+    fitContain = false,
+  }: {
+    w?: number;
+    h?: number;
+    fitContain?: boolean;
+  }) {
+    if (!window.$mediaImageDOM || !window.$mediaPreviewerDOM || !window.$mediaToolbarDOM || !w || !h) {
       return;
     }
-    if ((w && w > window.$mediaPreviewerDOM.offsetWidth) || (h && h > window.$mediaPreviewerDOM.offsetHeight)) {
+
+    const previewerSize = await ipcRenderer.invoke(IPC_CHANNELS.MEDIA_GET_PREVIEWER_SIZE);
+    console.log('previewerSize', JSON.stringify(previewerSize));
+
+    // 是否需要图片尺寸适配预览窗口大小
+    if (fitContain) {
+      setImageFitContain(window.$mediaImageDOM, { width: w, height: h });
+    }
+
+    // 溢出宽度 = 图片宽度 - 预览窗口宽度
+    const oWidth = w - previewerSize.width;
+    // 溢出高度 = (图片高度 + 工具栏高度) - 预览窗口高度
+    const oHeight = h + window.$mediaToolbarDOM.clientHeight - previewerSize.height;
+
+    window.$mediaImageDOM.style.left = `${-oWidth / 2}px`;
+    window.$mediaImageDOM.style.top = `${-oHeight / 2}px`;
+
+    // 图片尺寸是否超出窗口
+    if (oWidth || oHeight) {
       window.$mediaImageDOM.classList.add(overflowClass);
     } else {
       window.$mediaImageDOM.classList.remove(overflowClass);
     }
+
+    window.$mediaImageDOM.style.display = 'block';
   }
 
   // 下载
@@ -249,7 +338,9 @@ export default function useToolbar() {
     toggleSize,
     resizeToOrigin,
     resizeToFit,
+    toggleMaximize,
     rotate,
+    setImageFitContain,
     setImageInitSize,
     zoomIn,
     zoomOut,

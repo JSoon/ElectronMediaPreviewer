@@ -113,9 +113,19 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   // 进入/退出全屏 (最大化)
   function onMediaFullscreenToggle(e) {
     if (!previewer.window.isMaximized()) {
-      previewer.window.maximize();
+      const primaryDisplay = screen.getPrimaryDisplay();
+      const { width, height } = primaryDisplay.workAreaSize;
+      previewer.window.setBounds(
+        {
+          x: 0,
+          y: 0,
+          width,
+          height,
+        },
+        false
+      );
     } else {
-      previewer.window.unmaximize();
+      previewer.window.setBounds(previewer.initialState, false);
     }
     return previewer.window.isMaximized();
   }
@@ -124,7 +134,7 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   function onMediaResizeToOrigin(e, data) {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width, height } = primaryDisplay.workAreaSize;
-    const { naturalWidth, naturalHeight, toolbarHeight } = data;
+    const { naturalWidth, naturalHeight } = data;
 
     // 若图片原始尺寸小于默认窗口尺寸, 则使用默认窗口尺寸进行居中计算
     // 若图片原始尺寸大于默认窗口尺寸, 则使用屏幕尺寸进行居中计算
@@ -149,17 +159,26 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
       {
         x: Math.floor((width - calcWidth) / 2),
         y: Math.floor((height - calcHeight) / 2),
-        // 因为布局原因, 窗口高度=工具栏高度+图片高度, 故图片在缩放至1:1原始尺寸时, 窗口高度需要加上工具栏高度
-        width: naturalWidth < width ? naturalWidth + toolbarHeight : width,
-        height: naturalHeight < height ? naturalHeight + toolbarHeight : height,
+        width: naturalWidth < width ? naturalWidth : width,
+        height: naturalHeight < height ? naturalHeight : height,
       },
-      true
+      false
     );
   }
 
   // 切换到固定尺寸
   function onMediaResizeToFit(e) {
-    previewer.window.setBounds(previewer.initialState, true);
+    previewer.window.setBounds(previewer.initialState, false);
+  }
+
+  // 获取窗口是否最大化
+  function onMediaGetPreviewerMaximized(e) {
+    return previewer.window.isMaximized();
+  }
+
+  // 获取预览窗口尺寸
+  function onMediaGetPreviewerSize(e) {
+    return previewer.window.getBounds();
   }
 
   // 下载
@@ -249,6 +268,9 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
 
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, onMediaResizeToOrigin);
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT, onMediaResizeToFit);
+
+  ipcMain.handle(IPC_CHANNELS.MEDIA_GET_PREVIEWER_MAXIMIZED, onMediaGetPreviewerMaximized);
+  ipcMain.handle(IPC_CHANNELS.MEDIA_GET_PREVIEWER_SIZE, onMediaGetPreviewerSize);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_DOWNLOAD, onMediaDownload);
   ipcMain.on(IPC_CHANNELS.MEDIA_COPY_FILE, onMediaCopy);

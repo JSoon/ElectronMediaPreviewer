@@ -10,14 +10,12 @@
           :src="media.url"
           alt=""
           ref="mediaImageDOM"
-          :width="mediaImageWidth"
-          :height="mediaImageHeight"
           @load="onMediaImageLoaded"
         />
         <video
           v-if="isMediaVideo"
           :key="media.id"
-          class="media-item video-item"
+          class="media-item"
           :class="mediaClass"
           controls
           controlslist="nodownload nofullscreen noremoteplayback"
@@ -44,13 +42,65 @@ import useMediaData from '@/composables/useMediaData';
 import useToolbar from '@/composables/useToolbar';
 import ContextMenu from '@/components/ContextMenu.vue';
 
+// 处理图片拖拽移动事件
+function handleImageMove(mediaImageDOM: HTMLImageElement) {
+  let isKeydown = false;
+  let originCoords = { x: 0, y: 0 };
+
+  mediaImageDOM.addEventListener('mousedown', onMediaImageMouseDown);
+  mediaImageDOM.addEventListener('mouseup', onMediaImageMouseUp);
+  mediaImageDOM.addEventListener('mouseleave', onMediaImageMouseLeave);
+
+  function onMediaImageMouseDown(e: MouseEvent) {
+    isKeydown = true;
+    originCoords.x = e.x;
+    originCoords.y = e.y;
+
+    mediaImageDOM.addEventListener('mousemove', onMediaImageMouseMove);
+  }
+
+  function onMediaImageMouseMove(e: MouseEvent) {
+    if (!isKeydown) {
+      return;
+    }
+    // 计算坐标移动值
+    const diffCoords = {
+      x: e.x - originCoords.x,
+      y: e.y - originCoords.y,
+    };
+    // 更新图片位置坐标
+    const left = parseFloat(mediaImageDOM.style.left) + diffCoords.x;
+    const top = parseFloat(mediaImageDOM.style.top) + diffCoords.y;
+    mediaImageDOM.style.left = `${left}px`;
+    mediaImageDOM.style.top = `${top}px`;
+
+    // 更新初始坐标
+    originCoords.x = e.x;
+    originCoords.y = e.y;
+  }
+
+  function onMediaImageMouseUp(e: MouseEvent) {
+    isKeydown = false;
+
+    mediaImageDOM.removeEventListener('mousemove', onMediaImageMouseMove);
+  }
+
+  // 鼠标移出预览区域时, 注销图片移动事件
+  function onMediaImageMouseLeave(e: MouseEvent) {
+    console.log('鼠标移出预览图');
+
+    isKeydown = false;
+    mediaImageDOM.removeEventListener('mousemove', onMediaImageMouseMove);
+  }
+}
+
 export default defineComponent({
   components: {
     ContextMenu,
   },
   setup() {
     const { media } = useMediaData();
-    const { setImageInitSize } = useToolbar();
+    const { setImageFitContain, setImageInitSize, adjustOverflow } = useToolbar();
 
     const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
@@ -79,34 +129,21 @@ export default defineComponent({
     });
 
     // 初始化图片尺寸
-    const mediaImageWidth = ref();
-    const mediaImageHeight = ref();
     const onMediaImageLoaded = function () {
-      let w;
-      let h;
-      // 原图比例
-      const ratio = mediaImageDOM.value.naturalWidth / mediaImageDOM.value.naturalHeight;
-      // 若是横图
-      if (ratio >= 1) {
-        const tempW = mediaPreviewerDOM.value.offsetWidth;
-        const tempH = mediaPreviewerDOM.value.offsetWidth / ratio;
-        // 若图片缩放后, 高度仍大于容器高度, 则再缩放一次
-        if (tempH > mediaPreviewerDOM.value.offsetHeight) {
-          w = null;
-          h = mediaPreviewerDOM.value.offsetHeight;
-        } else {
-          w = tempW;
-          h = null;
-        }
-      }
-      // 若是竖图
-      else {
-        w = null;
-        h = mediaPreviewerDOM.value.offsetHeight;
-      }
-      mediaImageWidth.value = w;
-      mediaImageHeight.value = h;
+      const { w, h } = setImageFitContain(mediaImageDOM.value, {
+        width: mediaPreviewerDOM.value.offsetWidth,
+        height: mediaPreviewerDOM.value.offsetHeight,
+      });
       setImageInitSize(w, h);
+      handleImageMove(mediaImageDOM.value);
+
+      // 窗口缩放, 调节图片位置
+      window.addEventListener('resize', () => {
+        adjustOverflow({
+          w: mediaImageDOM.value.width,
+          h: mediaImageDOM.value.height,
+        });
+      });
     };
 
     return {
@@ -115,8 +152,6 @@ export default defineComponent({
       isMediaVideo,
       mediaClass,
       onMediaImageLoaded,
-      mediaImageWidth,
-      mediaImageHeight,
 
       mediaPreviewerDOM,
       mediaImageDOM,
@@ -128,37 +163,21 @@ export default defineComponent({
 
 <style lang="less" scoped>
 .com-media-previewer::v-deep {
+  z-index: 1;
   position: fixed;
   top: 38px;
   right: 0;
   bottom: 0;
   left: 0;
-  overflow: auto;
+  overflow: hidden;
   background-color: #eee;
-
-  &.fullscreen {
-    background-color: #000;
-
-    .media-image {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      width: 90%;
-      height: 90%;
-      margin: auto;
-      object-fit: contain;
-    }
-  }
 
   .media-item {
     position: absolute;
     top: 0;
-    right: 0;
-    bottom: 0;
     left: 0;
-    margin: auto;
+    -webkit-user-select: none;
+    user-select: none;
     -webkit-app-region: no-drag;
   }
 
@@ -168,10 +187,10 @@ export default defineComponent({
   }
 
   .media-image {
-    transition: all 0.3s;
+    // transition: all 0.3s;
 
     &.overflow {
-      position: relative;
+      // position: relative;
     }
   }
 
@@ -179,42 +198,6 @@ export default defineComponent({
     width: 100%;
     height: 100%;
     object-fit: contain;
-  }
-
-  .fullscreen-actions {
-    position: fixed;
-    top: 30px;
-    left: 30px;
-    display: flex;
-    align-items: center;
-    height: 60px;
-    padding: 0 12px;
-    background: #1d1d1d;
-    border-radius: 6px;
-    opacity: 0.5;
-
-    &:hover {
-      opacity: 1;
-    }
-
-    button {
-      padding: 15px;
-      border: none;
-      background: none;
-      -webkit-app-region: no-drag;
-    }
-
-    .iconfont {
-      color: #d2d2d2;
-    }
-
-    .icon-web-close {
-      font-size: 20px;
-    }
-
-    .icon-web-minimize {
-      font-size: 25px;
-    }
   }
 }
 </style>
