@@ -6,12 +6,19 @@ export default (): void => {
   const { turnToPrev, turnToNext } = useMediaData();
 
   // 空格键, 退出键: 关闭预览
-  // document.addEventListener('keyup', (e) => {
-  //   if (e.code === 'Space' || e.code === 'Escape') {
-  //     e.preventDefault();
-  //     ipcRenderer.send(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE);
-  //   }
-  // });
+  document.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      // 当前焦点是视频元素, 则不关闭
+      if (e.target !== window.$mediaVideoDOM) {
+        ipcRenderer.send(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE);
+      }
+    }
+    if (e.code === 'Escape') {
+      e.preventDefault();
+      ipcRenderer.send(IPC_CHANNELS.MEDIA_PREVIEW_CLOSE);
+    }
+  });
 
   // 禁用刷新
   document.addEventListener('keydown', (e) => {

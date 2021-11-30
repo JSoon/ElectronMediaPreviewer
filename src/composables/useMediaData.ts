@@ -49,8 +49,6 @@ function updatePagerState(state: IState) {
 }
 
 export default function useMediaData() {
-  const { reset } = useToolbar();
-
   // 上一张
   const turnToPrev = () => {
     if (state.index === 0) {
@@ -60,7 +58,6 @@ export default function useMediaData() {
     state.index -= 1;
     state.media = state.mediaList[state.index];
     updatePagerState(state);
-    reset();
   };
 
   // 下一张
@@ -72,7 +69,6 @@ export default function useMediaData() {
     state.index += 1;
     state.media = state.mediaList[state.index];
     updatePagerState(state);
-    reset();
   };
 
   return {

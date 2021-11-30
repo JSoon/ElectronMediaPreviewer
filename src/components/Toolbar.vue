@@ -49,10 +49,11 @@ export default defineComponent({
   },
   setup() {
     const { media, turnToPrev, turnToNext, hasPrev, hasNext } = useMediaData();
-    const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
-
     const { isFullscreen, toggleFullscreen, updateFullscreen } = useFullscreen();
     const { toggleSize, toggleResizeTxt, rotate, zoomIn, zoomOut } = useToolbar();
+
+    const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
+
     const toggleSizeFunc = () => {
       toggleSize();
       updateFullscreen();

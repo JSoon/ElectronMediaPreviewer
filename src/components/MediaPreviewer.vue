@@ -160,7 +160,7 @@ export default defineComponent({
   },
   setup() {
     const { media } = useMediaData();
-    const { setImageFitContain, setImageInitSize, adjustImage, zoomIn, zoomOut } = useToolbar();
+    const { setImageFitContain, setImageInitSize, adjustImage, zoomIn, zoomOut, reset } = useToolbar();
 
     const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
@@ -185,6 +185,10 @@ export default defineComponent({
       nextTick(() => {
         window.$mediaImageDOM = mediaImageDOM.value;
         window.$mediaVideoDOM = mediaVideoDOM.value;
+        // 若是视频, 则获取焦点
+        window.$mediaVideoDOM?.focus();
+        // 初始化状态
+        reset();
       });
     });
 
@@ -237,8 +241,6 @@ export default defineComponent({
     position: absolute;
     top: 0;
     left: 0;
-    -webkit-user-select: none;
-    user-select: none;
     -webkit-app-region: no-drag;
   }
 
@@ -249,9 +251,11 @@ export default defineComponent({
 
   .media-image {
     // transition: all 0.3s;
+    -webkit-app-region: drag;
 
     &.overflow {
       cursor: move;
+      -webkit-app-region: no-drag;
     }
   }
 
@@ -259,6 +263,19 @@ export default defineComponent({
     width: 100%;
     height: 100%;
     object-fit: contain;
+  }
+
+  .zoom-toast {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 20px;
+    color: #fff;
+    pointer-events: none;
   }
 }
 </style>

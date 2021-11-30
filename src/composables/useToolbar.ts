@@ -15,6 +15,8 @@ interface IState {
   toggleResizeTxt: EResizeTxt;
   rotate: number;
   overflow: boolean;
+  overflowX: boolean;
+  overflowY: boolean;
   imageInitWidth: number;
   imageInitHeight: number;
 }
@@ -27,15 +29,56 @@ const state: IState = reactive({
   rotate: 0,
   // 图片是否溢出预览窗口
   overflow: false,
+  overflowX: false,
+  overflowY: false,
   // 图片初始尺寸
   imageInitWidth: 0,
   imageInitHeight: 0,
 });
 
+// 缩放百分比提示框
+let zoomToast: HTMLDivElement;
+let zoomToastTimer: number;
+const generateZoomToast = (width: number, duration = 2000) => {
+  if (!window.$mediaPreviewerDOM) {
+    return;
+  }
+
+  const percentage = Math.ceil((width / state.imageInitWidth) * 100);
+
+  if (!zoomToast) {
+    zoomToast = document.createElement('div');
+    zoomToast.classList.add('zoom-toast');
+    zoomToast.style.transition = 'all .3s';
+    window.$mediaPreviewerDOM.appendChild(zoomToast);
+  }
+
+  zoomToast.innerHTML = `${percentage} %`;
+
+  show();
+
+  clearTimeout(zoomToastTimer);
+  zoomToastTimer = setTimeout(() => {
+    hide();
+  }, duration);
+
+  function show() {
+    zoomToast.style.display = 'block';
+  }
+
+  function hide() {
+    zoomToast.style.display = 'none';
+  }
+
+  return {
+    show,
+    hide,
+  };
+};
+
 // 缩放倍数范围
-const maxWidth = 2500;
-const minWidth = 200;
 const defaultScaleRate = 0.2;
+const maxScaleRate = 4;
 
 export default function useToolbar() {
   const { ipcRenderer, IPC_CHANNELS } = window.electron;
@@ -86,8 +129,11 @@ export default function useToolbar() {
     if (!window.$mediaImageDOM) {
       return;
     }
+
     window.$mediaPreviewerDOM?.classList.remove(originClass);
     window.$mediaImageDOM.classList.remove(overflowClass);
+    window.$mediaImageDOM.classList.remove(overflowXClass);
+    window.$mediaImageDOM.classList.remove(overflowYClass);
 
     ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT);
 
@@ -193,12 +239,32 @@ export default function useToolbar() {
     // 放大
     if (zoom === 'in') {
       w += w * scaleRate;
+
+      if (w > state.imageInitWidth * maxScaleRate) {
+        w = maxScaleRate * state.imageInitWidth;
+        message.info({
+          content: '已经放至最大了',
+          duration: 1,
+          key: 'zoomInMax',
+        });
+      }
     }
     // 缩小
     else {
       w -= w * scaleRate;
+
+      if (w < state.imageInitWidth / maxScaleRate) {
+        w = state.imageInitWidth / maxScaleRate;
+        message.info({
+          content: '已经缩至最小了',
+          duration: 1,
+          key: 'zoomInMin',
+        });
+      }
     }
     h = w / ratio;
+
+    generateZoomToast(w);
 
     adjustImage({
       w,
@@ -212,30 +278,12 @@ export default function useToolbar() {
       return;
     }
 
-    if (window.$mediaImageDOM.clientWidth > maxWidth) {
-      message.info({
-        content: '已经放至最大了',
-        duration: 1,
-        key: 'zoomInMax',
-      });
-      return;
-    }
-
     zoomSize(window.$mediaImageDOM, 'in', scaleRate);
   };
 
   // 缩小
   const zoomOut = (scaleRate: number = defaultScaleRate) => {
     if (!window.$mediaImageDOM) {
-      return;
-    }
-
-    if (window.$mediaImageDOM.clientWidth < minWidth) {
-      message.info({
-        content: '已经缩至最小了',
-        duration: 1,
-        key: 'zoomInMin',
-      });
       return;
     }
 
@@ -292,23 +340,21 @@ export default function useToolbar() {
       window.$mediaImageDOM.style.top = `${-oHeight / 2}px`;
     }
 
-    // 图片尺寸是否超出窗口
+    // 图片溢出预览窗口样式设置
     if (oWidth > 0 || oHeight > 0) {
       window.$mediaImageDOM.classList.add(overflowClass);
-      if (oWidth > 0) {
-        window.$mediaImageDOM.classList.add(overflowXClass);
-      }
-      if (oHeight > 0) {
-        window.$mediaImageDOM.classList.add(overflowYClass);
-      }
     } else {
       window.$mediaImageDOM.classList.remove(overflowClass);
-      if (oWidth <= 0) {
-        window.$mediaImageDOM.classList.remove(overflowXClass);
-      }
-      if (oHeight <= 0) {
-        window.$mediaImageDOM.classList.remove(overflowYClass);
-      }
+    }
+    if (oWidth > 0) {
+      window.$mediaImageDOM.classList.add(overflowXClass);
+    } else {
+      window.$mediaImageDOM.classList.remove(overflowXClass);
+    }
+    if (oHeight > 0) {
+      window.$mediaImageDOM.classList.add(overflowYClass);
+    } else {
+      window.$mediaImageDOM.classList.remove(overflowYClass);
     }
   }
 
