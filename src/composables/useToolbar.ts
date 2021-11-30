@@ -7,8 +7,8 @@ import { reactive, toRefs } from 'vue';
 import { IMediaItem } from '@/typings/media';
 
 export enum EResizeTxt {
-  origin = '1:1',
-  fit = '固定',
+  origin = '原图大小',
+  fit = '适应窗口',
 }
 
 interface IState {

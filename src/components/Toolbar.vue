@@ -1,23 +1,35 @@
 <template>
   <div class="com-toolbar" ref="mediaToolbarDOM" @dblclick.self="toggleFullscreen">
     <div class="group">
-      <button :disabled="!hasPrev" @click="turnToPrev"><i class="iconfont icon-web-pl-arrow" /></button>
-      <button :disabled="!hasNext" @click="turnToNext"><i class="iconfont icon-web-pr-arrow" /></button>
+      <a-tooltip title="上一张">
+        <button :disabled="!hasPrev" @click="turnToPrev"><i class="iconfont icon-web-pl-arrow" /></button>
+      </a-tooltip>
+      <a-tooltip title="下一张">
+        <button :disabled="!hasNext" @click="turnToNext"><i class="iconfont icon-web-pr-arrow" /></button>
+      </a-tooltip>
     </div>
     <div class="group">
-      <button :disabled="isMediaVideo" @click="() => zoomIn()">
-        <i class="iconfont icon-web-enlarge" />
-      </button>
-      <button :disabled="isMediaVideo" @click="() => zoomOut()">
-        <i class="iconfont icon-web-narrow" />
-      </button>
-      <button :disabled="isMediaVideo" @click="rotate">
-        <i class="iconfont icon-web-rotate" />
-      </button>
-      <button :disabled="isMediaVideo" @click="toggleSize">
-        <i v-if="toggleResizeTxt === EResizeTxt.origin" class="iconfont icon-web-size" />
-        <i v-if="toggleResizeTxt === EResizeTxt.fit" class="iconfont icon-web-default" />
-      </button>
+      <a-tooltip title="放大">
+        <button :disabled="isMediaVideo" @click="() => zoomIn()">
+          <i class="iconfont icon-web-enlarge" />
+        </button>
+      </a-tooltip>
+      <a-tooltip title="缩小">
+        <button :disabled="isMediaVideo" @click="() => zoomOut()">
+          <i class="iconfont icon-web-narrow" />
+        </button>
+      </a-tooltip>
+      <a-tooltip title="旋转">
+        <button :disabled="isMediaVideo" @click="rotate">
+          <i class="iconfont icon-web-rotate" />
+        </button>
+      </a-tooltip>
+      <a-tooltip :title="toggleResizeTxt">
+        <button :disabled="isMediaVideo" @click="toggleSize">
+          <i v-if="toggleResizeTxt === EResizeTxt.origin" class="iconfont icon-web-size" />
+          <i v-if="toggleResizeTxt === EResizeTxt.fit" class="iconfont icon-web-default" />
+        </button>
+      </a-tooltip>
     </div>
     <div class="group">
       <a-dropdown :trigger="['click']">
@@ -28,9 +40,13 @@
       </a-dropdown>
     </div>
     <div class="window-actions">
-      <button v-if="!isFullscreen" @click="toggleFullscreen"><i class="iconfont icon-web-maximize" /></button>
-      <button v-else @click="toggleFullscreen"><i class="iconfont icon-web-minimize" /></button>
-      <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
+      <a-tooltip :title="isFullscreen ? '还原' : '最大化'">
+        <button v-if="!isFullscreen" @click="toggleFullscreen"><i class="iconfont icon-web-maximize" /></button>
+        <button v-else @click="toggleFullscreen"><i class="iconfont icon-web-minimize" /></button>
+      </a-tooltip>
+      <a-tooltip title="关闭">
+        <button @click="closePreviewer"><i class="iconfont icon-web-close" /></button>
+      </a-tooltip>
     </div>
   </div>
 </template>
