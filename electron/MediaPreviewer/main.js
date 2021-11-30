@@ -112,9 +112,12 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
 
   // 进入/退出全屏 (最大化)
   function onMediaFullscreenToggle(e) {
-    if (!previewer.window.isMaximized()) {
-      const primaryDisplay = screen.getPrimaryDisplay();
-      const { width, height } = primaryDisplay.workAreaSize;
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width, height } = primaryDisplay.workAreaSize;
+    const [winWidth, winHeight] = previewer.window.getSize();
+    const isMaximized = winWidth === width && winHeight === height;
+
+    if (!isMaximized) {
       previewer.window.setBounds(
         {
           x: 0,
@@ -124,10 +127,11 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
         },
         false
       );
+      return true;
     } else {
       previewer.window.setBounds(previewer.initialState, false);
+      return false;
     }
-    return previewer.window.isMaximized();
   }
 
   // 切换到1:1原始尺寸
@@ -173,7 +177,11 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
 
   // 获取窗口是否最大化
   function onMediaGetPreviewerMaximized(e) {
-    return previewer.window.isMaximized();
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width, height } = primaryDisplay.workAreaSize;
+    const [winWidth, winHeight] = previewer.window.getSize();
+    const isMaximized = winWidth === width && winHeight === height;
+    return isMaximized;
   }
 
   // 获取预览窗口尺寸

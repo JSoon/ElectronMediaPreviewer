@@ -42,8 +42,38 @@ import useMediaData from '@/composables/useMediaData';
 import useToolbar from '@/composables/useToolbar';
 import ContextMenu from '@/components/ContextMenu.vue';
 
+// 处理鼠标滚动缩放图片
+function handleMouseWheel(
+  mediaImageDOM: HTMLImageElement,
+  zoomIn: (rate: number) => void,
+  zoomOut: (rate: number) => void
+) {
+  mediaImageDOM.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const isZoomIn = e.deltaY < 0 ? true : false;
+    const scaleRate = Math.min(Math.abs(e.deltaY / 100), 0.3);
+    // 放大
+    if (isZoomIn) {
+      zoomIn(scaleRate);
+    }
+    // 缩小
+    else {
+      zoomOut(scaleRate);
+    }
+  });
+}
+
+// 图片是否溢出预览窗口
+function imageOverflow(mediaImageDOM: HTMLImageElement) {
+  return {
+    overflow: mediaImageDOM.classList.contains('overflow'),
+    overflowX: mediaImageDOM.classList.contains('overflow-x'),
+    overflowY: mediaImageDOM.classList.contains('overflow-y'),
+  };
+}
+
 // 处理图片拖拽移动事件
-function handleImageMove(mediaImageDOM: HTMLImageElement) {
+function handleImageMove(mediaImageDOM: HTMLImageElement, mediaPreviewerDOM: HTMLDivElement) {
   let isKeydown = false;
   let originCoords = { x: 0, y: 0 };
 
@@ -63,6 +93,8 @@ function handleImageMove(mediaImageDOM: HTMLImageElement) {
     if (!isKeydown) {
       return;
     }
+    const { overflowX, overflowY } = imageOverflow(mediaImageDOM);
+
     // 计算坐标移动值
     const diffCoords = {
       x: e.x - originCoords.x,
@@ -71,8 +103,36 @@ function handleImageMove(mediaImageDOM: HTMLImageElement) {
     // 更新图片位置坐标
     const left = parseFloat(mediaImageDOM.style.left) + diffCoords.x;
     const top = parseFloat(mediaImageDOM.style.top) + diffCoords.y;
-    mediaImageDOM.style.left = `${left}px`;
-    mediaImageDOM.style.top = `${top}px`;
+
+    // 调整图片边界
+    let finalLeft = left;
+    let finalTop = top;
+    if (left < 0) {
+      if (left > mediaPreviewerDOM.clientWidth - mediaImageDOM.clientWidth) {
+        finalLeft = left;
+      } else {
+        finalLeft = mediaPreviewerDOM.clientWidth - mediaImageDOM.clientWidth;
+      }
+    } else {
+      finalLeft = 0;
+    }
+    if (top < 0) {
+      if (top > mediaPreviewerDOM.clientHeight - mediaImageDOM.clientHeight) {
+        finalTop = top;
+      } else {
+        finalTop = mediaPreviewerDOM.clientHeight - mediaImageDOM.clientHeight;
+      }
+    } else {
+      finalTop = 0;
+    }
+
+    // 更新图片位置
+    if (overflowX) {
+      mediaImageDOM.style.left = `${finalLeft}px`;
+    }
+    if (overflowY) {
+      mediaImageDOM.style.top = `${finalTop}px`;
+    }
 
     // 更新初始坐标
     originCoords.x = e.x;
@@ -100,7 +160,7 @@ export default defineComponent({
   },
   setup() {
     const { media } = useMediaData();
-    const { setImageFitContain, setImageInitSize, adjustOverflow } = useToolbar();
+    const { setImageFitContain, setImageInitSize, adjustImage, zoomIn, zoomOut } = useToolbar();
 
     const isMediaImage = computed(() => media.value?.type === EMediaType.IMG);
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
@@ -135,11 +195,12 @@ export default defineComponent({
         height: mediaPreviewerDOM.value.offsetHeight,
       });
       setImageInitSize(w, h);
-      handleImageMove(mediaImageDOM.value);
+      handleImageMove(mediaImageDOM.value, mediaPreviewerDOM.value);
+      handleMouseWheel(mediaImageDOM.value, zoomIn, zoomOut);
 
       // 窗口缩放, 调节图片位置
       window.addEventListener('resize', () => {
-        adjustOverflow({
+        adjustImage({
           w: mediaImageDOM.value.width,
           h: mediaImageDOM.value.height,
         });
@@ -190,7 +251,7 @@ export default defineComponent({
     // transition: all 0.3s;
 
     &.overflow {
-      // position: relative;
+      cursor: move;
     }
   }
 

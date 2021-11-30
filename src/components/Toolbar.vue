@@ -5,10 +5,10 @@
       <button :disabled="!hasNext" @click="turnToNext"><i class="iconfont icon-web-pr-arrow" /></button>
     </div>
     <div class="group">
-      <button :disabled="isMediaVideo" @click="zoomIn">
+      <button :disabled="isMediaVideo" @click="() => zoomIn()">
         <i class="iconfont icon-web-enlarge" />
       </button>
-      <button :disabled="isMediaVideo" @click="zoomOut">
+      <button :disabled="isMediaVideo" @click="() => zoomOut()">
         <i class="iconfont icon-web-narrow" />
       </button>
       <button :disabled="isMediaVideo" @click="rotate">

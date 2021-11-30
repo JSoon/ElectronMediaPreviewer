@@ -14,6 +14,7 @@ export enum EResizeTxt {
 interface IState {
   toggleResizeTxt: EResizeTxt;
   rotate: number;
+  overflow: boolean;
   imageInitWidth: number;
   imageInitHeight: number;
 }
@@ -24,6 +25,8 @@ const state: IState = reactive({
   toggleResizeTxt: EResizeTxt.origin,
   // 图片翻转角度
   rotate: 0,
+  // 图片是否溢出预览窗口
+  overflow: false,
   // 图片初始尺寸
   imageInitWidth: 0,
   imageInitHeight: 0,
@@ -32,7 +35,7 @@ const state: IState = reactive({
 // 缩放倍数范围
 const maxWidth = 2500;
 const minWidth = 200;
-const scaleStep = 80;
+const defaultScaleRate = 0.2;
 
 export default function useToolbar() {
   const { ipcRenderer, IPC_CHANNELS } = window.electron;
@@ -66,15 +69,12 @@ export default function useToolbar() {
     const naturalWidth = window.$mediaImageDOM.naturalWidth;
     const naturalHeight = window.$mediaImageDOM.naturalHeight;
 
-    window.$mediaImageDOM.setAttribute('width', `${naturalWidth}`);
-    window.$mediaImageDOM.setAttribute('height', `${naturalHeight}`);
-
     ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, {
       naturalWidth,
       naturalHeight,
     });
 
-    adjustOverflow({
+    adjustImage({
       w: naturalWidth,
       h: naturalHeight,
     });
@@ -89,12 +89,9 @@ export default function useToolbar() {
     window.$mediaPreviewerDOM?.classList.remove(originClass);
     window.$mediaImageDOM.classList.remove(overflowClass);
 
-    window.$mediaImageDOM.setAttribute('width', `${state.imageInitWidth}`);
-    window.$mediaImageDOM.setAttribute('height', `${state.imageInitHeight}`);
-
     ipcRenderer.send(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT);
 
-    adjustOverflow({
+    adjustImage({
       w: state.imageInitWidth,
       h: state.imageInitHeight,
     });
@@ -108,7 +105,7 @@ export default function useToolbar() {
     }
 
     // 设置图片尺寸
-    adjustOverflow({
+    adjustImage({
       w: window.$mediaImageDOM.width,
       h: window.$mediaImageDOM.height,
       fitContain: true,
@@ -130,7 +127,7 @@ export default function useToolbar() {
     }
 
     // 设置图片尺寸
-    adjustOverflow({
+    adjustImage({
       w: window.$mediaImageDOM.width,
       h: window.$mediaImageDOM.height,
     });
@@ -171,10 +168,7 @@ export default function useToolbar() {
       }
     }
 
-    mediaImageDOM.width = w;
-    mediaImageDOM.height = h;
-
-    adjustOverflow({
+    adjustImage({
       w,
       h,
     });
@@ -192,72 +186,83 @@ export default function useToolbar() {
 
   // 图片按比例缩放尺寸计算
   type TZoom = 'in' | 'out';
-  const zoomSize = (mediaImageDOM: HTMLImageElement, zoom: TZoom = 'in') => {
+  const zoomSize = (mediaImageDOM: HTMLImageElement, zoom: TZoom = 'in', scaleRate: number) => {
     const ratio = mediaImageDOM.naturalWidth / mediaImageDOM.naturalHeight;
     let w = mediaImageDOM.clientWidth;
     let h = mediaImageDOM.clientHeight;
     // 放大
     if (zoom === 'in') {
-      w += scaleStep;
+      w += w * scaleRate;
     }
     // 缩小
     else {
-      w -= scaleStep;
+      w -= w * scaleRate;
     }
     h = w / ratio;
 
-    mediaImageDOM.style.display = 'none';
-    // 更新图片尺寸
-    mediaImageDOM.setAttribute('width', `${w}`);
-    mediaImageDOM.setAttribute('height', `${h}`);
-
-    adjustOverflow({
+    adjustImage({
       w,
       h,
     });
   };
 
   // 放大
-  const zoomIn = () => {
+  const zoomIn = (scaleRate: number = defaultScaleRate) => {
     if (!window.$mediaImageDOM) {
       return;
     }
 
     if (window.$mediaImageDOM.clientWidth > maxWidth) {
-      message.info('已经放至最大了', 1);
+      message.info({
+        content: '已经放至最大了',
+        duration: 1,
+        key: 'zoomInMax',
+      });
       return;
     }
 
-    zoomSize(window.$mediaImageDOM, 'in');
+    zoomSize(window.$mediaImageDOM, 'in', scaleRate);
   };
 
   // 缩小
-  const zoomOut = () => {
+  const zoomOut = (scaleRate: number = defaultScaleRate) => {
     if (!window.$mediaImageDOM) {
       return;
     }
 
     if (window.$mediaImageDOM.clientWidth < minWidth) {
-      message.info('已经缩至最小了', 1);
+      message.info({
+        content: '已经缩至最小了',
+        duration: 1,
+        key: 'zoomInMin',
+      });
       return;
     }
 
-    zoomSize(window.$mediaImageDOM, 'out');
+    zoomSize(window.$mediaImageDOM, 'out', scaleRate);
   };
 
-  // 调整图片尺寸溢出样式
+  // 调整图片相关属性 (尺寸, 位置, 类名等属性)
   const overflowClass = 'overflow';
-  async function adjustOverflow({
+  const overflowXClass = 'overflow-x';
+  const overflowYClass = 'overflow-y';
+  async function adjustImage({
     // 图片宽度
     w,
     // 图片高度
     h,
     // 图片适配模式是否为contain
     fitContain = false,
+    // 是否改变尺寸
+    changeSize = true,
+    // 是否改变位置
+    changePosition = true,
   }: {
-    w?: number;
-    h?: number;
+    w: number;
+    h: number;
     fitContain?: boolean;
+    changeSize?: boolean;
+    changePosition?: boolean;
   }) {
     if (!window.$mediaImageDOM || !window.$mediaPreviewerDOM || !window.$mediaToolbarDOM || !w || !h) {
       return;
@@ -276,17 +281,35 @@ export default function useToolbar() {
     // 溢出高度 = (图片高度 + 工具栏高度) - 预览窗口高度
     const oHeight = h + window.$mediaToolbarDOM.clientHeight - previewerSize.height;
 
-    window.$mediaImageDOM.style.left = `${-oWidth / 2}px`;
-    window.$mediaImageDOM.style.top = `${-oHeight / 2}px`;
-
-    // 图片尺寸是否超出窗口
-    if (oWidth || oHeight) {
-      window.$mediaImageDOM.classList.add(overflowClass);
-    } else {
-      window.$mediaImageDOM.classList.remove(overflowClass);
+    // 设置图片尺寸
+    if (changeSize) {
+      window.$mediaImageDOM.style.width = `${w}px`;
+      window.$mediaImageDOM.style.height = `${h}px`;
+    }
+    // 设置图片位置
+    if (changePosition) {
+      window.$mediaImageDOM.style.left = `${-oWidth / 2}px`;
+      window.$mediaImageDOM.style.top = `${-oHeight / 2}px`;
     }
 
-    window.$mediaImageDOM.style.display = 'block';
+    // 图片尺寸是否超出窗口
+    if (oWidth > 0 || oHeight > 0) {
+      window.$mediaImageDOM.classList.add(overflowClass);
+      if (oWidth > 0) {
+        window.$mediaImageDOM.classList.add(overflowXClass);
+      }
+      if (oHeight > 0) {
+        window.$mediaImageDOM.classList.add(overflowYClass);
+      }
+    } else {
+      window.$mediaImageDOM.classList.remove(overflowClass);
+      if (oWidth <= 0) {
+        window.$mediaImageDOM.classList.remove(overflowXClass);
+      }
+      if (oHeight <= 0) {
+        window.$mediaImageDOM.classList.remove(overflowYClass);
+      }
+    }
   }
 
   // 下载
@@ -344,7 +367,7 @@ export default function useToolbar() {
     setImageInitSize,
     zoomIn,
     zoomOut,
-    adjustOverflow,
+    adjustImage,
     downloadURI,
     copyFile,
     forward,
