@@ -43,12 +43,8 @@ import useToolbar from '@/composables/useToolbar';
 import ContextMenu from '@/components/ContextMenu.vue';
 
 // 处理鼠标滚动缩放图片
-function handleMouseWheel(
-  mediaImageDOM: HTMLImageElement,
-  zoomIn: (rate: number) => void,
-  zoomOut: (rate: number) => void
-) {
-  mediaImageDOM.addEventListener('wheel', (e) => {
+function handleMouseWheel(DOM: HTMLElement, zoomIn: (rate: number) => void, zoomOut: (rate: number) => void) {
+  DOM.addEventListener('wheel', (e) => {
     e.preventDefault();
     const isZoomIn = e.deltaY < 0 ? true : false;
     const scaleRate = Math.min(Math.abs(e.deltaY / 100), 0.3);
@@ -104,27 +100,27 @@ function handleImageMove(mediaImageDOM: HTMLImageElement, mediaPreviewerDOM: HTM
     const left = parseFloat(mediaImageDOM.style.left) + diffCoords.x;
     const top = parseFloat(mediaImageDOM.style.top) + diffCoords.y;
 
-    // 调整图片边界
     let finalLeft = left;
     let finalTop = top;
-    if (left < 0) {
-      if (left > mediaPreviewerDOM.clientWidth - mediaImageDOM.clientWidth) {
-        finalLeft = left;
-      } else {
-        finalLeft = mediaPreviewerDOM.clientWidth - mediaImageDOM.clientWidth;
-      }
-    } else {
-      finalLeft = 0;
-    }
-    if (top < 0) {
-      if (top > mediaPreviewerDOM.clientHeight - mediaImageDOM.clientHeight) {
-        finalTop = top;
-      } else {
-        finalTop = mediaPreviewerDOM.clientHeight - mediaImageDOM.clientHeight;
-      }
-    } else {
-      finalTop = 0;
-    }
+    // 限制图片可拖动边界 (暂时不做限制, 因为图片旋转后, 宽高并不会发生变化, 会导致拖拽后显示不完整)
+    // if (left < 0) {
+    //   if (left > mediaPreviewerDOM.clientWidth - mediaImageDOM.clientWidth) {
+    //     finalLeft = left;
+    //   } else {
+    //     finalLeft = mediaPreviewerDOM.clientWidth - mediaImageDOM.clientWidth;
+    //   }
+    // } else {
+    //   finalLeft = 0;
+    // }
+    // if (top < 0) {
+    //   if (top > mediaPreviewerDOM.clientHeight - mediaImageDOM.clientHeight) {
+    //     finalTop = top;
+    //   } else {
+    //     finalTop = mediaPreviewerDOM.clientHeight - mediaImageDOM.clientHeight;
+    //   }
+    // } else {
+    //   finalTop = 0;
+    // }
 
     // 更新图片位置
     if (overflowX) {
@@ -201,13 +197,13 @@ export default defineComponent({
       setImageInitSize(w, h);
       mediaImageDOM.value.style.display = 'block';
       handleImageMove(mediaImageDOM.value, mediaPreviewerDOM.value);
+      handleMouseWheel(mediaPreviewerDOM.value, zoomIn, zoomOut);
       handleMouseWheel(mediaImageDOM.value, zoomIn, zoomOut);
 
       // 窗口缩放, 调节图片位置
       window.addEventListener('resize', () => {
         adjustImage({
-          w: mediaImageDOM.value.width,
-          h: mediaImageDOM.value.height,
+          changeSize: false,
         });
       });
     };
@@ -237,12 +233,12 @@ export default defineComponent({
   left: 0;
   overflow: hidden;
   background-color: #eee;
+  -webkit-app-region: no-drag;
 
   .media-item {
     position: absolute;
     top: 0;
     left: 0;
-    -webkit-app-region: no-drag;
   }
 
   // 视频由于无法隐藏更多菜单按钮，且无伪类能够控制其no-drag属性，故视频整个禁用拖拽
@@ -253,11 +249,9 @@ export default defineComponent({
   .media-image {
     display: block;
     // transition: all 0.3s;
-    -webkit-app-region: drag;
 
     &.overflow {
       cursor: move;
-      -webkit-app-region: no-drag;
     }
   }
 

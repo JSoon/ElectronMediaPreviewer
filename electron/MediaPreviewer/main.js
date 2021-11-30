@@ -80,6 +80,14 @@ class MediaPreviewer {
       });
     });
 
+    previewWin.on('maximize', () => {
+      previewWin.webContents.send(IPC_CHANNELS.MEDIA_WINDOW_MAXIMIZED);
+    });
+
+    previewWin.on('unmaximize', () => {
+      previewWin.webContents.send(IPC_CHANNELS.MEDIA_WINDOW_UNMAXIMIZED);
+    });
+
     // previewWin.webContents.openDevTools();
 
     this.window = previewWin;
@@ -112,26 +120,15 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
 
   // 进入/退出全屏 (最大化)
   function onMediaFullscreenToggle(e) {
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width, height } = primaryDisplay.workAreaSize;
-    const [winWidth, winHeight] = previewer.window.getSize();
-    const isMaximized = winWidth === width && winHeight === height;
+    const isMaximized = previewer.window.isMaximized();
 
     if (!isMaximized) {
-      previewer.window.setBounds(
-        {
-          x: 0,
-          y: 0,
-          width,
-          height,
-        },
-        false
-      );
-      return true;
+      previewer.window.maximize();
     } else {
-      previewer.window.setBounds(previewer.initialState, false);
-      return false;
+      previewer.window.unmaximize();
     }
+
+    return previewer.window.isMaximized();
   }
 
   // 切换到1:1原始尺寸
@@ -175,17 +172,8 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
     previewer.window.setBounds(previewer.initialState, false);
   }
 
-  // 获取窗口是否最大化
-  function onMediaGetPreviewerMaximized(e) {
-    const primaryDisplay = screen.getPrimaryDisplay();
-    const { width, height } = primaryDisplay.workAreaSize;
-    const [winWidth, winHeight] = previewer.window.getSize();
-    const isMaximized = winWidth === width && winHeight === height;
-    return isMaximized;
-  }
-
   // 获取预览窗口尺寸
-  function onMediaGetPreviewerSize(e) {
+  function onMediaGetWindowSize(e) {
     return previewer.window.getBounds();
   }
 
@@ -277,8 +265,7 @@ const useMediaPreviewer = ({ mainWindow, downloadDir }) => {
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_ORIGIN, onMediaResizeToOrigin);
   ipcMain.on(IPC_CHANNELS.MEDIA_RESIZE_TO_FIT, onMediaResizeToFit);
 
-  ipcMain.handle(IPC_CHANNELS.MEDIA_GET_PREVIEWER_MAXIMIZED, onMediaGetPreviewerMaximized);
-  ipcMain.handle(IPC_CHANNELS.MEDIA_GET_PREVIEWER_SIZE, onMediaGetPreviewerSize);
+  ipcMain.handle(IPC_CHANNELS.MEDIA_WINDOW_SIZE, onMediaGetWindowSize);
 
   ipcMain.on(IPC_CHANNELS.MEDIA_DOWNLOAD, onMediaDownload);
   ipcMain.on(IPC_CHANNELS.MEDIA_COPY_FILE, onMediaCopy);

@@ -14,7 +14,7 @@
       <button :disabled="isMediaVideo" @click="rotate">
         <i class="iconfont icon-web-rotate" />
       </button>
-      <button :disabled="isMediaVideo" @click="toggleSizeFunc">
+      <button :disabled="isMediaVideo" @click="toggleSize">
         <i v-if="toggleResizeTxt === EResizeTxt.origin" class="iconfont icon-web-size" />
         <i v-if="toggleResizeTxt === EResizeTxt.fit" class="iconfont icon-web-default" />
       </button>
@@ -49,15 +49,10 @@ export default defineComponent({
   },
   setup() {
     const { media, turnToPrev, turnToNext, hasPrev, hasNext } = useMediaData();
-    const { isFullscreen, toggleFullscreen, updateFullscreen } = useFullscreen();
+    const { isFullscreen, toggleFullscreen } = useFullscreen();
     const { toggleSize, toggleResizeTxt, rotate, zoomIn, zoomOut } = useToolbar();
 
     const isMediaVideo = computed(() => media.value?.type === EMediaType.VIDEO);
-
-    const toggleSizeFunc = () => {
-      toggleSize();
-      updateFullscreen();
-    };
 
     const mediaToolbarDOM = ref(null);
     onMounted(() => (window.$mediaToolbarDOM = mediaToolbarDOM.value));
@@ -79,7 +74,7 @@ export default defineComponent({
       closePreviewer,
       isFullscreen,
       toggleFullscreen,
-      toggleSizeFunc,
+      toggleSize,
       EResizeTxt,
       toggleResizeTxt,
       rotate,

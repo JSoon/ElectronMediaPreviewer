@@ -19,6 +19,8 @@ interface IState {
   overflowY: boolean;
   imageInitWidth: number;
   imageInitHeight: number;
+  imageWidth: number;
+  imageHeight: number;
 }
 
 // 默认状态
@@ -34,6 +36,9 @@ const state: IState = reactive({
   // 图片初始尺寸
   imageInitWidth: 0,
   imageInitHeight: 0,
+  // 图片当前尺寸
+  imageWidth: 0,
+  imageHeight: 0,
 });
 
 // 缩放百分比提示框
@@ -144,20 +149,6 @@ export default function useToolbar() {
     setToggleResizeTxt(EResizeTxt.origin);
   };
 
-  // 窗口最大化切换
-  const toggleMaximize = async () => {
-    if (!window.$mediaImageDOM) {
-      return;
-    }
-
-    // 设置图片尺寸
-    adjustImage({
-      w: window.$mediaImageDOM.width,
-      h: window.$mediaImageDOM.height,
-      fitContain: true,
-    });
-  };
-
   // 翻转
   const rotate = () => {
     if (!window.$mediaImageDOM) {
@@ -171,12 +162,6 @@ export default function useToolbar() {
     } else {
       window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg)`;
     }
-
-    // 设置图片尺寸
-    adjustImage({
-      w: window.$mediaImageDOM.width,
-      h: window.$mediaImageDOM.height,
-    });
   };
 
   // 设置图片适配模式为包含 (即图片能够在预览窗口完整显示)
@@ -306,18 +291,29 @@ export default function useToolbar() {
     // 是否改变位置
     changePosition = true,
   }: {
-    w: number;
-    h: number;
+    w?: number;
+    h?: number;
     fitContain?: boolean;
     changeSize?: boolean;
     changePosition?: boolean;
   }) {
-    if (!window.$mediaImageDOM || !window.$mediaPreviewerDOM || !window.$mediaToolbarDOM || !w || !h) {
+    if (!window.$mediaImageDOM || !window.$mediaToolbarDOM) {
       return;
     }
 
-    const previewerSize = await ipcRenderer.invoke(IPC_CHANNELS.MEDIA_GET_PREVIEWER_SIZE);
-    console.log('previewerSize', JSON.stringify(previewerSize));
+    // 更新图片当前尺寸
+    if (w) {
+      state.imageWidth = w;
+    }
+    if (h) {
+      state.imageHeight = h;
+    }
+
+    // 若未传入尺寸, 则使用当前尺寸
+    w = w || state.imageWidth;
+    h = h || state.imageHeight;
+
+    const previewerSize = await ipcRenderer.invoke(IPC_CHANNELS.MEDIA_WINDOW_SIZE);
 
     // 是否需要图片尺寸适配预览窗口大小
     if (fitContain) {
@@ -407,7 +403,6 @@ export default function useToolbar() {
     toggleSize,
     resizeToOrigin,
     resizeToFit,
-    toggleMaximize,
     rotate,
     setImageFitContain,
     setImageInitSize,
