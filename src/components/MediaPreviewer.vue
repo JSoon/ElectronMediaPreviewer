@@ -199,6 +199,7 @@ export default defineComponent({
         height: mediaPreviewerDOM.value.offsetHeight,
       });
       setImageInitSize(w, h);
+      mediaImageDOM.value.style.display = 'block';
       handleImageMove(mediaImageDOM.value, mediaPreviewerDOM.value);
       handleMouseWheel(mediaImageDOM.value, zoomIn, zoomOut);
 
@@ -250,6 +251,7 @@ export default defineComponent({
   }
 
   .media-image {
+    display: block;
     // transition: all 0.3s;
     -webkit-app-region: drag;
 
