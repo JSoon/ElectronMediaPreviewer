@@ -46,7 +46,6 @@ class MediaPreviewer {
       frame: false,
       autoHideMenuBar: true,
       nativeWindowOpen: false,
-      skipTaskbar: true,
       show: true,
       webPreferences: {
         preload: path.join(__dirname, 'preload.js'),
