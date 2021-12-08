@@ -49,7 +49,7 @@ const generateZoomToast = (width: number, duration = 2000) => {
     return;
   }
 
-  const percentage = Math.ceil((width / state.imageInitWidth) * 100);
+  const percentage = Math.round((width / state.imageInitWidth) * 100);
 
   if (!zoomToast) {
     zoomToast = document.createElement('div');
@@ -82,7 +82,7 @@ const generateZoomToast = (width: number, duration = 2000) => {
 };
 
 // 缩放倍数范围
-const defaultScaleRate = 0.2;
+const defaultScaleRate = 0.1;
 const maxScaleRate = 4;
 
 export default function useToolbar() {
@@ -223,7 +223,7 @@ export default function useToolbar() {
     let h = mediaImageDOM.clientHeight;
     // 放大
     if (zoom === 'in') {
-      w += w * scaleRate;
+      w += state.imageInitWidth * scaleRate;
 
       if (w > state.imageInitWidth * maxScaleRate) {
         w = maxScaleRate * state.imageInitWidth;
@@ -236,7 +236,7 @@ export default function useToolbar() {
     }
     // 缩小
     else {
-      w -= w * scaleRate;
+      w -= state.imageInitWidth * scaleRate;
 
       if (w < state.imageInitWidth / maxScaleRate) {
         w = state.imageInitWidth / maxScaleRate;

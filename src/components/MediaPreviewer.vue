@@ -47,6 +47,7 @@ function handleMouseWheel(DOM: HTMLElement, zoomIn: (rate: number) => void, zoom
   DOM.addEventListener('wheel', (e) => {
     e.preventDefault();
     const isZoomIn = e.deltaY < 0 ? true : false;
+    // 限制单次滚动最大缩放比例为30%
     const scaleRate = Math.min(Math.abs(e.deltaY / 100), 0.3);
     // 放大
     if (isZoomIn) {
