@@ -1,6 +1,5 @@
 import { toRefs, reactive } from 'vue';
 import { IMediaData } from '@/typings/media';
-import useToolbar from './useToolbar';
 import { message } from 'ant-design-vue';
 
 interface IState extends IMediaData {
@@ -52,7 +51,11 @@ export default function useMediaData() {
   // 上一张
   const turnToPrev = () => {
     if (state.index === 0) {
-      message.info('已经是第一张了', 1);
+      message.info({
+        content: '已经是第一张了',
+        duration: 1,
+        key: 'turnToPrev',
+      });
       return;
     }
     state.index -= 1;
@@ -63,7 +66,11 @@ export default function useMediaData() {
   // 下一张
   const turnToNext = () => {
     if (state.index === state.mediaList.length - 1) {
-      message.info('已经是最后一张了', 1);
+      message.info({
+        content: '已经是最后一张了',
+        duration: 1,
+        key: 'turnToNext',
+      });
       return;
     }
     state.index += 1;

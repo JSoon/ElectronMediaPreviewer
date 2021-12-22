@@ -27,7 +27,7 @@ interface IState {
 const state: IState = reactive({
   // 尺寸切换文本
   toggleResizeTxt: EResizeTxt.origin,
-  // 图片翻转角度
+  // 图片旋转角度
   rotate: 0,
   // 图片是否溢出预览窗口
   overflow: false,
@@ -149,19 +149,21 @@ export default function useToolbar() {
     setToggleResizeTxt(EResizeTxt.origin);
   };
 
-  // 翻转
-  const rotate = () => {
+  /**
+   * 旋转图片
+   * @param reset 是否重置旋转角度
+   * @returns     void
+   */
+  const rotate = (reset: boolean) => {
     if (!window.$mediaImageDOM) {
       return;
     }
 
     state.rotate += 90;
-    // 若是90的奇数倍, 则缩小.x倍
-    if ((state.rotate / 90) % 2 === 1) {
-      window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg)`;
-    } else {
-      window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg)`;
+    if (reset === true) {
+      state.rotate = 0;
     }
+    window.$mediaImageDOM.style.transform = `rotate(${state.rotate}deg)`;
   };
 
   // 设置图片适配模式为包含 (即图片能够在预览窗口完整显示)
@@ -395,7 +397,7 @@ export default function useToolbar() {
   // 重置状态
   const reset = () => {
     resizeToFit();
-    state.rotate = 0;
+    rotate(true);
   };
 
   return {
