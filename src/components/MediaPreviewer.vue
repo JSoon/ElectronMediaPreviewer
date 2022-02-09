@@ -21,7 +21,7 @@
           controlslist="nodownload nofullscreen noremoteplayback"
           disablePictureInPicture
           ref="mediaVideoDOM"
-          autoplay="autoplay"
+          tabIndex="-1"
           muted
         >
           <source :src="media.url" type="video/mp4" />
@@ -182,8 +182,6 @@ export default defineComponent({
       nextTick(() => {
         window.$mediaImageDOM = mediaImageDOM.value;
         window.$mediaVideoDOM = mediaVideoDOM.value;
-        // 若是视频, 则获取焦点
-        window.$mediaVideoDOM?.focus();
         // 初始化状态
         reset();
       });
