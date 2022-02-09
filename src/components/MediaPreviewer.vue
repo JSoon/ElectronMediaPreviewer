@@ -123,13 +123,17 @@ function handleImageMove(mediaImageDOM: HTMLImageElement, mediaPreviewerDOM: HTM
     //   finalTop = 0;
     // }
 
+    // 更新图片位置 (暂不控制溢出部分拖动范围)
+    mediaImageDOM.style.left = `${finalLeft}px`;
+    mediaImageDOM.style.top = `${finalTop}px`;
+
     // 更新图片位置
-    if (overflowX) {
-      mediaImageDOM.style.left = `${finalLeft}px`;
-    }
-    if (overflowY) {
-      mediaImageDOM.style.top = `${finalTop}px`;
-    }
+    // if (overflowX) {
+    //   mediaImageDOM.style.left = `${finalLeft}px`;
+    // }
+    // if (overflowY) {
+    //   mediaImageDOM.style.top = `${finalTop}px`;
+    // }
 
     // 更新初始坐标
     originCoords.x = e.x;
