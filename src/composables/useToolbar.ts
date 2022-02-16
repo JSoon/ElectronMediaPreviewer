@@ -19,6 +19,8 @@ interface IState {
   overflowY: boolean;
   imageInitWidth: number;
   imageInitHeight: number;
+  imageNaturalWidth: number;
+  imageNaturalHeight: number;
   imageWidth: number;
   imageHeight: number;
 }
@@ -36,6 +38,9 @@ const state: IState = reactive({
   // 图片初始尺寸
   imageInitWidth: 0,
   imageInitHeight: 0,
+  // 图片原始尺寸
+  imageNaturalWidth: 0,
+  imageNaturalHeight: 0,
   // 图片当前尺寸
   imageWidth: 0,
   imageHeight: 0,
@@ -49,7 +54,8 @@ const generateZoomToast = (width: number, duration = 2000) => {
     return;
   }
 
-  const percentage = Math.round((width / state.imageInitWidth) * 100);
+  // 百分比计算公式: 当前宽度/原始宽度*100%
+  const percentage = Math.round((width / state.imageNaturalWidth) * 100);
 
   if (!zoomToast) {
     zoomToast = document.createElement('div');
@@ -210,11 +216,24 @@ export default function useToolbar() {
   };
 
   // 设置图片初始化尺寸
-  const setImageInitSize = (w: IState['imageInitWidth'], h: IState['imageInitHeight']) => {
+  const setImageInitSize = (
+    w: IState['imageInitWidth'],
+    h: IState['imageInitHeight'],
+    nw: IState['imageNaturalWidth'],
+    nh: IState['imageNaturalHeight']
+  ) => {
     state.imageInitWidth = w;
     state.imageInitHeight = h;
+    state.imageNaturalWidth = nw;
+    state.imageNaturalHeight = nh;
 
-    console.log('image init size', state.imageInitWidth, state.imageInitHeight);
+    console.log(
+      'image init size',
+      state.imageInitWidth,
+      state.imageInitHeight,
+      state.imageNaturalWidth,
+      state.imageNaturalHeight
+    );
   };
 
   // 图片按比例缩放尺寸计算
@@ -225,10 +244,11 @@ export default function useToolbar() {
     let h = mediaImageDOM.clientHeight;
     // 放大
     if (zoom === 'in') {
-      w += state.imageInitWidth * scaleRate;
+      w += mediaImageDOM.naturalWidth * scaleRate;
 
-      if (w > state.imageInitWidth * maxScaleRate) {
-        w = maxScaleRate * state.imageInitWidth;
+      // 最大宽度为原始尺寸*最大放大倍数
+      if (w > mediaImageDOM.naturalWidth * maxScaleRate) {
+        w = maxScaleRate * mediaImageDOM.naturalWidth;
         message.info({
           content: '已经放至最大了',
           duration: 1,
@@ -238,8 +258,9 @@ export default function useToolbar() {
     }
     // 缩小
     else {
-      w -= state.imageInitWidth * scaleRate;
+      w -= mediaImageDOM.naturalWidth * scaleRate;
 
+      // 最小宽度为初始尺寸/最大放大倍数
       if (w < state.imageInitWidth / maxScaleRate) {
         w = state.imageInitWidth / maxScaleRate;
         message.info({

@@ -197,7 +197,9 @@ export default defineComponent({
         width: mediaPreviewerDOM.value.offsetWidth,
         height: mediaPreviewerDOM.value.offsetHeight,
       });
-      setImageInitSize(w, h);
+      const nw = mediaImageDOM.value.naturalWidth;
+      const nh = mediaImageDOM.value.naturalHeight;
+      setImageInitSize(w, h, nw, nh);
       mediaImageDOM.value.style.display = 'block';
       handleImageMove(mediaImageDOM.value, mediaPreviewerDOM.value);
       handleMouseWheel(mediaPreviewerDOM.value, zoomIn, zoomOut);
